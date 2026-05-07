@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инкассаторские маршруты - Москва</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Montserrat', sans-serif;
+        min-height: 100vh;
+        /* Более глубокий, сложный градиент: от глубокого синего к воздушному серо-голубому */
+        background: linear-gradient(165deg, #0b4566 0%, #154f6c 30%, #2e8ab8 70%, #a3c9db 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+    /* Декоративные круги */
+    body::before {
+        content: '';
+        position: fixed;
+        top: -200px;
+        right: -150px;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(180, 220, 225, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    body::after {
+        content: '';
+        position: fixed;
+        bottom: -180px;
+        left: -120px;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(46, 138, 184, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    /* Основной контейнер */
+    .main-container {
+        background: rgba(255, 255, 255, 0.96); /* Чуть больше прозрачности для мягкости */
+        border-radius: 32px; /* Более плавные углы */
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.6);
+        padding: 55px 50px 45px;
+        max-width: 680px;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(12px);
+        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.2), box-shadow 0.4s ease;
+    }
+
+    .main-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+            0 35px 60px -15px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.8);
+    }
+
+    /* Акцентная полоска сверху */
+    .accent-line {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 70px; /* чуть шире */
+        height: 4px;
+        background: linear-gradient(90deg, #9adfd0, #6bc0d4, #4a9eb5);
+        border-radius: 0 0 5px 5px;
+        opacity: 0.9;
+    }
+
+    /* Иконка */
+    .icon {
+        font-size: 52px;
+        margin-bottom: 20px;
+        display: inline-block;
+        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
+    }
+
+    /* Заголовок */
+    h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 44px;
+        font-weight: 600; /* 600 выглядит изящнее, чем 700 */
+        color: #0a2f3f;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+        line-height: 1.15;
+    }
+
+    /* Разделитель */
+    .title-divider {
+        width: 50px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #8cc9c7, #4a9eb5, #8cc9c7, transparent);
+        margin: 18px auto 14px;
+        border-radius: 1px;
+    }
+
+    /* Подзаголовок */
+    .subtitle {
+        font-size: 13px;
+        font-weight: 400;
+        color: #6b8899;
+        margin-bottom: 36px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+    }
+
+    /* Кнопка */
+    .build-button {
+        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
+        border: none;
+        color: #ffffff;
+        padding: 17px 52px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 50px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        box-shadow: 0 10px 25px -5px rgba(26, 95, 122, 0.4);
+        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        margin-bottom: 32px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Эффект блика на кнопке */
+    .build-button::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.7s, height 0.7s;
+    }
+
+    .build-button:hover::after {
+        width: 350px;
+        height: 350px;
+    }
+
+    .build-button:hover {
+        background: linear-gradient(135deg, #2c3e50 0%, #1a2d3b 100%);
+        box-shadow: 0 15px 30px -6px rgba(20, 40, 55, 0.5);
+        transform: translateY(-3px);
+        letter-spacing: 3.5px;
+    }
+
+    .build-button:active {
+        transform: translateY(0);
+        box-shadow: 0 5px 15px rgba(26, 95, 122, 0.4);
+        transition: all 0.1s ease;
+    }
+
+    /* Блок с результатом */
+    .result-box {
+        display: none;
+        background: #ffffff;
+        border: 1px solid #e7f0f4;
+        border-radius: 20px;
+        padding: 28px 32px;
+        margin-top: 5px;
+        text-align: left;
+        animation: fadeSlideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 8px 20px rgba(0, 40, 60, 0.04);
+    }
+
+    .result-box.show {
+        display: block;
+    }
+
+    @keyframes fadeSlideIn {
+        from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+        .result-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0a3d52;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e8f0f4;
+            letter-spacing: 0.5px;
+        }
+
+    .result-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 6px;
+        border-bottom: 1px solid #f4f8fb;
+        font-size: 14px;
+        font-weight: 400;
+        color: #2d5569;
+        transition: background 0.2s ease, padding-left 0.2s ease;
+        border-radius: 8px;
+        margin-bottom: 2px;
+    }
+
+    .result-item:hover {
+        background: #f8fbfd;
+        padding-left: 12px;
+    }
+
+    .result-item:last-of-type {
+        border-bottom: 1px solid #f4f8fb;
+        margin-bottom: 0;
+    }
+
+    .result-icon {
+        font-size: 22px;
+        width: 30px;
+        text-align: center;
+        opacity: 0.8;
+    }
+
+    .result-item strong {
+        font-weight: 600;
+        color: #0e3b4d;
+    }
+
+    /* Критические банкоматы */
+    .critical-alert {
+        margin-top: 18px;
+        padding: 14px 18px;
+        background: #fefaf7;
+        border-radius: 12px;
+        border-left: 4px solid #cc6b4d; /* приглушенный коралловый вместо ярко-красного */
+        font-size: 13px;
+        font-weight: 500;
+        color: #8b422a;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transition: background 0.2s ease;
+    }
+
+    .critical-alert:hover {
+        background: #fef5f1;
+    }
+
+    .critical-dot {
+        width: 9px;
+        height: 9px;
+        background: #cc6b4d;
+        border-radius: 50%;
+        flex-shrink: 0;
+        animation: pulse 2.2s ease-in-out infinite;
+        box-shadow: 0 0 0 2px rgba(204, 107, 77, 0.2);
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.9; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.5); }
+    }
+
+    /* Блок с картой */
+    .map-area {
+        display: none;
+        margin-top: 24px;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 2px solid #e1eef4;
+        animation: fadeSlideIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 6px 22px rgba(0, 40, 60, 0.05);
+    }
+
+    .map-area.show {
+        display: block;
+    }
+
+    .map-placeholder {
+        background: #fafdfe;
+        height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #598395;
+        font-size: 15px;
+        font-weight: 400;
+        position: relative;
+    }
+
+    /* Сетка на плейсхолдере карты */
+    .map-placeholder::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(rgba(140, 190, 200, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(140, 190, 200, 0.06) 1px, transparent 1px);
+        background-size: 24px 24px;
+        pointer-events: none;
+    }
+
+    .map-placeholder .map-icon {
+        font-size: 52px;
+        margin-bottom: 16px;
+        opacity: 0.65;
+        position: relative;
+        z-index: 1;
+    }
+
+    .map-placeholder p {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Футер */
+    .footer {
+        margin-top: 32px;
+        font-size: 11px;
+        font-weight: 400;
+        color: #8aaebb;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        opacity: 0.9;
+    }
+</style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="accent-line"></div>
+        <div class="icon">🚚</div>
+        <h1>Маршруты инкассаторов</h1>
+        <div class="title-divider"></div>
+        <p class="subtitle">Москва &nbsp;·&nbsp; 1000 банкоматов &nbsp;·&nbsp; 5 машин</p>
+        
+        <button class="build-button" id="btnBuildRoute">Построить маршрут</button>
+        
+        <div class="result-box" id="resultBox">
+            <div class="result-title">Построенные маршруты</div>
+            <div class="result-item">
+                <span class="result-icon">🚗</span>
+                <span><strong>Машина 1</strong> &nbsp;-&nbsp; 18 банкоматов, 7 ч 20 мин</span>
+            </div>
+            <div class="result-item">
+                <span class="result-icon">🚙</span>
+                <span><strong>Машина 2</strong> &nbsp;-&nbsp; 15 банкоматов, 6 ч 50 мин</span>
+            </div>
+            <div class="result-item">
+                <span class="result-icon">🚐</span>
+                <span><strong>Машина 3</strong> &nbsp;-&nbsp; 20 банкоматов, 7 ч 45 мин</span>
+            </div>
+            <div class="result-item">
+                <span class="result-icon">🚛</span>
+                <span><strong>Машина 4</strong> &nbsp;-&nbsp; 17 банкоматов, 7 ч 10 мин</span>
+            </div>
+            <div class="result-item">
+                <span class="result-icon">🚎</span>
+                <span><strong>Машина 5</strong> &nbsp;-&nbsp; 16 банкоматов, 6 ч 55 мин</span>
+            </div>
+            <div class="critical-alert">
+                <span class="critical-dot"></span>
+                Критических банкоматов: 3 - требуется срочный объезд
+            </div>
+        </div>
+        
+        <div class="map-area" id="mapArea">
+            <div class="map-placeholder">
+                <div class="map-icon">🗺️</div>
+                <p>Интерактивная карта маршрутов</p>
+                <p style="font-size: 13px; margin-top: 6px; color: #89aab8;">с цветными линиями и статусами банкоматов</p>
+            </div>
+        </div>
+        
+        <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
+    </div>
+
+    <script>
+        document.getElementById('btnBuildRoute').addEventListener('click', function() {
+            document.getElementById('resultBox').classList.add('show');
+            document.getElementById('mapArea').classList.add('show');
+            this.textContent = 'Обновить маршрут';
+        });
+    </script>
+
+</body>
+</html>
