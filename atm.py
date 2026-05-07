@@ -1,91 +1,66 @@
-import math
+class Atm: # Класс, описывающий банкомат
 
-
-class Atm:
-    """
-    Класс, описывающий банкомат.
-
-    Статистические параметры:
-    - mean_in, std_in: среднее и отклонение купюр, которые люди ВНОСЯТ в час.
-    - mean_out, std_out: среднее и отклонение купюр, которые люди СНИМАЮТ в час.
-    - capacity_in, capacity_out: максимальная вместимость бункеров приема и выдачи.
-
-    Все средние значения — это количество банкнот (купюр) в час.
-    Предполагаем, что это нормальное распределение.
-    """
-
-    def __init__(self, atm_id, lat, lon,
-                 capacity_in, capacity_out,
-                 mean_in, std_in,
-                 mean_out, std_out,
-                 current_in_level=0, current_out_level=0):
-        self.atm_id = atm_id
-        self.lat = lat  # Широта
-        self.lon = lon  # Долгота
-
-        # Параметры бункеров
-        self.capacity_in = capacity_in
-        self.capacity_out = capacity_out
-
-        # Статистика ВНЕСЕНИЯ денег (пополнение бункера приема)
-        self.mean_in = mean_in  # Среднее купюр в час
-        self.std_in = std_in  # Стандартное отклонение
-
-        # Статистика СНЯТИЯ денег (опустошение бункера выдачи)
-        self.mean_out = mean_out  # Среднее купюр в час
-        self.std_out = std_out  # Стандартное отклонение
-
-        # Текущий уровень бункеров (сколько уже накопилось/осталось)
-        self.current_in_level = current_in_level
-        self.current_out_level = current_out_level
-
-    def predict_level_after_hours(self, hours):
+    def __init__(self, atm_id: int, lat: float, lon: float,
+                 capacity_in: int, capacity_out: int,
+                 mean_in: float = 0, std_in: float = 0,
+                 mean_out: float = 0, std_out: float = 0):
         """
-        Прогноз уровня через заданное количество часов.
-        Возвращает (предполагаемый_уровень_приема, предполагаемый_уровень_выдачи).
+        Конструктор класса — вызывается при создании объекта банкомата.
 
-        Формула: текущий_уровень + (среднее_поступлений * часы) ± дисперсия.
-        Для простоты используем +- 2 сигмы (95% доверительный интервал).
+        :param atm_id: уникальный идентификатор банкомата
+        :param lat: широта (географическая координата)
+        :param lon: долгота (географическая координата)
+        :param capacity_in: максимальная вместимость бункера приёма
+        :param capacity_out: максимальная вместимость бункера выдачи
+        :param mean_in: среднее количество внесённых купюр в час
+        :param std_in: отклонение внесений (разброс)
+        :param mean_out: среднее количество снятых купюр в час
+        :param std_out: отклонение снятий
         """
-        # Сколько купюр в среднем внесут за это время
-        total_in_mean = self.mean_in * hours
-        # Плюс "запас" на разброс (2 стандартных отклонения)
-        total_in_worst = total_in_mean + 2 * self.std_in * math.sqrt(hours)
 
-        # Сколько купюр в среднем снимут за это время
-        total_out_mean = self.mean_out * hours
-        # Минимальный уровень (худший случай для выдачи)
-        total_out_worst = total_out_mean + 2 * self.std_out * math.sqrt(hours)
+        # Проверяем, что ёмкости бункеров заданы корректно
+        # Они не могут быть нулевыми или отрицательными
+        if capacity_in <= 0 or capacity_out <= 0:
+            raise ValueError("Ёмкости бункеров должны быть больше 0")
 
-        predicted_in = self.current_in_level + total_in_worst
-        predicted_out = self.current_out_level - total_out_worst
+        # БАЗОВЫЕ ПАРАМЕТРЫ 
+        # Сохраняем переданные значения в объект (self — текущий объект)
+        self.id = atm_id              # уникальный номер банкомата
+        self.lat = lat                # широта ( для расчета расстояний)
+        self.lon = lon                # долгота (для расчета расстояний)
+        self.capacity_in = capacity_in    # максимальная вместимость бункера приема денег
+        self.capacity_out = capacity_out  # максимальная вместимость бункера выдачи денег
 
-        return predicted_in, predicted_out
 
-    def is_critical(self, hours_ahead=24):
+        # ТЕКУЩЕЕ СОСТОЯНИЕ БАНКОМАТА
+        # сколько уже накопилось в бункере приема
+        self.current_in = 0
+
+        # сколько осталось в бункере выдачи (начинаем с полного)
+        self.current_out = capacity_out
+
+        # СТАТИСТИКА 
+        self.mean_in = mean_in
+        self.std_in = std_in
+        self.mean_out = mean_out
+        self.std_out = std_out
+
+    def needs_service(self) -> bool:
         """
-        Проверяет, находится ли банкомат в критическом состоянии.
+        Проверяет, нужен ли банкомату инкассатор.
+        Условия:
+        - если бункер приема заполнен более чем на 90%
+        - если бункер выдачи опустел ниже 10%
 
-        Критично, если:
-        - Бункер приема заполнится > 90% (переполнение);
-        - Бункер выдачи опустеет < 10% (пустой).
+        :return: True — нужен, False — не нужен
         """
-        pred_in, pred_out = self.predict_level_after_hours(hours_ahead)
+        # Если бункер приёма переполнен (>= 90%)
+        if self.current_in >= self.capacity_in * 0.9:
+            return True
 
-        in_fill_pct = (pred_in / self.capacity_in) * 100
-        out_fill_pct = (pred_out / self.capacity_out) * 100
+        # Если бункер выдачи почти пуст (<= 10%)
+        if self.current_out <= self.capacity_out * 0.1:
+            return True
 
-        if in_fill_pct > 90:
-            return True, "RED_IN_OVERFLOW"
-        if out_fill_pct < 10:
-            return True, "RED_OUT_EMPTY"
-
-        if in_fill_pct > 70 or out_fill_pct < 30:
-            return True, "YELLOW"
-
-        return False, "GREEN"
-
-    def __repr__(self):
-        return (f"Atm({self.atm_id}, "
-                f"in={self.current_in_level}/{self.capacity_in}, "
-                f"out={self.current_out_level}/{self.capacity_out})")
+        # Иначе всё хорошо
+        return False
