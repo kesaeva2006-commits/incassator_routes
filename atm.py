@@ -23,3 +23,20 @@ class Atm: # Класс, описывающий банкомат
         self.lon = lon                # долгота (для расчета расстояний)
         self.capacity_in = capacity_in    # максимальная вместимость бункера приема денег
         self.capacity_out = capacity_out  # максимальная вместимость бункера выдачи денег
+
+    def needs_service(self) -> bool:
+        """
+        Проверяет, нужен ли банкомату инкассатор.
+
+        :return: True — нужен, False — не нужен
+        """
+        # Если бункер приёма переполнен (>= 90%)
+        if self.current_in >= self.capacity_in * 0.9:
+            return True
+
+        # Если бункер выдачи почти пуст (<= 10%)
+        if self.current_out <= self.capacity_out * 0.1:
+            return True
+
+        # Иначе всё хорошо
+        return False
