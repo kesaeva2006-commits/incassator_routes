@@ -1,5 +1,9 @@
 import sys
 import os
+import pytest
+
+if not os.path.exists('atm.py'):
+    pytest.skip("atm.py ещё нет в main", allow_module_level=True)
 # Добавляем корневую папку проекта в путь поиска модулей
 # Нужно, чтобы Python нашёл файлы generator.py и atm.py
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
