@@ -23,7 +23,7 @@ class Atm: # Класс, описывающий банкомат
         if capacity_in <= 0 or capacity_out <= 0:
             raise ValueError("Ёмкости бункеров должны быть больше 0")
 
-        # БАЗОВЫЕ ПАРАМЕТРЫ 
+        # БАЗОВЫЕ ПАРАМЕТРЫ
         # Сохраняем переданные значения в объект (self — текущий объект)
         self.id = atm_id              # уникальный номер банкомата
         self.lat = lat                # широта ( для расчета расстояний)
@@ -39,7 +39,7 @@ class Atm: # Класс, описывающий банкомат
         # сколько осталось в бункере выдачи (начинаем с полного)
         self.current_out = capacity_out
 
-        # СТАТИСТИКА 
+        # СТАТИСТИКА
         self.mean_in = mean_in
         self.std_in = std_in
         self.mean_out = mean_out
@@ -64,3 +64,8 @@ class Atm: # Класс, описывающий банкомат
 
         # Иначе всё хорошо
         return False
+
+    def __repr__(self):
+        """Читаемый вид объекта для логов и отладки."""
+        return (f"Atm(id={self.id}, lat={self.lat:.4f}, lon={self.lon:.4f}, "
+                f"cap_in={self.capacity_in}, cap_out={self.capacity_out})")
