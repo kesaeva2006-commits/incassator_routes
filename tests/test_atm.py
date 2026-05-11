@@ -1,13 +1,7 @@
-import os
-import pytest
-
-# Если файла atm.py нет в main — пропускаем тест
-if not os.path.exists('atm.py'):
-    pytest.skip("atm.py ещё нет в main, тест будет запущен после вливания кода", allow_module_level=True)
-
-# Теперь можно безопасно импортировать
 import sys
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from atm import Atm
 
 # Тест 1: проверяем создание банкомата
