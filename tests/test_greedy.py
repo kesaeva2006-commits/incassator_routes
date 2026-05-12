@@ -2,10 +2,12 @@ import sys
 import os
 import pytest
 
-if not os.path.exists('atm.py'):
-    pytest.skip("atm.py ещё нет в main", allow_module_level=True)
 # Добавляем корневую папку проекта в путь поиска модулей
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Проверяем, есть ли файл atm.py
+if not os.path.exists('atm.py'):
+    pytest.skip("atm.py ещё нет в main", allow_module_level=True)
 
 # Импортируем жадный алгоритм (функция называется nearest_neighbor_route, а не nearest_neighbor)
 from greedy_algorithm import nearest_neighbor_route
