@@ -30,20 +30,21 @@ def calculate_travel_time(atm1, atm2):
     return time_minutes
 
 
-def check_workday_limit(route_time, service_time_per_atm=15):
+def check_workday_limit(route, travel_time, service_time_per_atm=15):
     """
     Проверяет, уложится ли маршрут в рабочий день.
 
-    route_time — суммарное время в пути между банкоматами.
-    service_time_per_atm — сколько времени инкассатор стоит у каждого банкомата (мин).
+    Параметры:
+        route — список банкоматов в порядке объезда
+        travel_time — суммарное время в пути между банкоматами (в минутах)
+        service_time_per_atm — время обслуживания одного банкомата (мин)
 
-    Возвращает (укладывается_ли, общее_время).
+    Возвращает (укладывается_ли, общее_время_в_минутах).
     """
-    # Количество банкоматов в маршруте
     num_atms = len(route)
 
-    # Общее время = время в пути + время обслуживания всех банкоматов + резерв 30 мин
-    total_time = route_time + (num_atms * service_time_per_atm) + 30
+    # Общее время = время в пути + обслуживание всех банкоматов + резерв 30 мин
+    total_time = travel_time + (num_atms * service_time_per_atm) + 30
 
     is_ok = total_time <= WORKDAY_MINUTES
 
