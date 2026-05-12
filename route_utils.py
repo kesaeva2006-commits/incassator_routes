@@ -68,3 +68,23 @@ def trim_route_by_time(route, travel_times):
             return route[:i]
 
     return route  # Весь маршрут влезает
+
+def print_route_to_console(route, total_minutes):
+    """Выводит маршрут в консоль (задачи 32-35)"""
+    print("\n" + "=" * 60)
+    print("МАРШРУТ ИНКАССАТОРА")
+    print("=" * 60)
+
+    for i, atm in enumerate(route, 1):
+        print(f"{i}. ATM_{atm.id} | ({atm.lat:.4f}, {atm.lon:.4f})")
+
+    hours = total_minutes // 60
+    minutes = total_minutes % 60
+    print(f"\nОбщее время: {hours} ч {minutes} мин")
+
+    if total_minutes <= 480:
+        print("Успеваем! Маршрут в 8 часов")
+    else:
+        print("НЕ успеваем! Превышение 8 часов")
+
+    print("=" * 60)
