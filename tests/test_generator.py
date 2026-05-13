@@ -5,8 +5,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from atm import Atm
-from generator import generate_atms  # В файле generator.py функция называется generate_atms
-
+from generator import generate_test_atms as generate_atms  # В файле generator.py функция называется generate_test_atms
 
 # ТЕСТЫ ДЛЯ ФУНКЦИИ generate_atms
 
@@ -41,7 +40,6 @@ def test_generate_atms_returns_unique_ids():
 
 def test_generate_atms_seed_consistency():
     """Проверяет, что при одинаковом seed генерируются одинаковые данные"""
-    # При одинаковом seed результаты должны совпадать
     atms1 = generate_atms(5, seed=42)
     atms2 = generate_atms(5, seed=42)
     
