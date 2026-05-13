@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from atm import Atm
 from generator import generate_atms
 from greedy_algorithm import nearest_neighbor_route, distance
+generate_atms = generate_test_atms
 
 # ТЕСТЫ ДЛЯ ФУНКЦИИ distance
 
