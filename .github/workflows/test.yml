@@ -1,8 +1,6 @@
 name: Python CI
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -16,8 +14,6 @@ jobs:
       with:
         python-version: '3.12'
     - name: Install dependencies
-      run: |
-        pip install pytest
+      run: pip install pytest
     - name: Run tests
-      run: |
-        pytest tests/
+      run: pytest tests/
