@@ -108,8 +108,8 @@ def test_is_critical_red_out_empty():
     assert reason == "RED_OUT_EMPTY"
 
 def test_is_critical_yellow_warning():
-    atm = Atm(1, 55.75, 37.62, 100, 100, mean_in=5, std_in=0, mean_out=0, std_out=0)
-    # Через 24 часа: pred_in = 0 + 5*24 = 120 (больше 70% от 100)
+    atm = Atm(1, 55.75, 37.62, 100, 100, mean_in=3, std_in=0, mean_out=0, std_out=0)
+    # Через 24 часа: pred_in = 0 + 3*24 = 72 (72% от 100)
     is_crit, reason = atm.is_critical(24)
     assert is_crit == True
     assert reason == "YELLOW"
