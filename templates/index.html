@@ -401,13 +401,40 @@
         <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
     </div>
 
-    <script>
-        document.getElementById('btnBuildRoute').addEventListener('click', function() {
-            document.getElementById('resultBox').classList.add('show');
-            document.getElementById('mapArea').classList.add('show');
-            this.textContent = 'Обновить маршрут';
-        });
-    </script>
+<script>
+    document.getElementById('btnBuildRoute').addEventListener('click', function() {
+        // Показываем блоки
+        document.getElementById('resultBox').classList.add('show');
+        document.getElementById('mapArea').classList.add('show');
+        this.textContent = 'Обновить маршрут';
+        
+        // Загружаем данные (пока для дня 1)
+        loadRoutes(1);
+    });
+
+    // Функция для загрузки данных с сервера
+    async function loadRoutes(day) {
+        // Показываем индикатор загрузки
+        document.getElementById('resultBox').innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
+        
+        try {
+            const response = await fetch(`/routes?day=${day}`);
+            const routes = await response.json();
+            
+            // Строим HTML с результатами
+            let html = '<div class="result-title">Построенные маршруты</div>';
+            routes.forEach(route => {
+                html += `<div class="result-item">
+                    <span class="result-icon">🚗</span>
+                    <span><strong>Машина ${route.group_id}</strong> — ${route.stops.length} банкоматов, ${Math.round(route.total_time / 60)} ч ${route.total_time % 60} мин</span>
+                </div>`;
+            });
+            document.getElementById('resultBox').innerHTML = html;
+        } catch (error) {
+            document.getElementById('resultBox').innerHTML = '<p style="color: red;">Ошибка загрузки маршрутов</p>';
+        }
+    }
+</script>
 
 </body>
 </html>
