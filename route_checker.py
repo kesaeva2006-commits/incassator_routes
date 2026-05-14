@@ -1,8 +1,7 @@
 """
 Проверка маршрутов на соответствие 8-часовому рабочему дню.
-Если маршрут превышает лимит — кластер разбивается на части.
+Если маршрут превышает лимит — банкоматы перераспределяются между 5 кластерами.
 
-Автор: Анна (Алгоритмист 2)
 """
 
 from route_utils import check_workday_limit, trim_route_by_time, calculate_travel_time
@@ -42,7 +41,7 @@ def check_all_routes(clusters: list, routes: list) -> dict:
         is_ok, total_time = check_workday_limit(route, total_travel_time)
 
         # Красивый вывод в консоль
-        status = "✅ УКЛАДЫВАЕТСЯ" if is_ok else "❌ ПРЕВЫШЕНИЕ!"
+        status = "УКЛАДЫВАЕТСЯ" if is_ok else "ПРЕВЫШЕНИЕ!"
         print(f"\nКластер {i + 1}: {len(route)} банкоматов")
         print(f"  Время в пути: {total_travel_time:.0f} мин")
         print(f"  Общее время: {total_time:.0f} мин / 480 мин")
@@ -52,140 +51,160 @@ def check_all_routes(clusters: list, routes: list) -> dict:
             result["ok"].append(i)
         else:
             result["over_limit"].append(i)
-            # Показываем, сколько банкоматов придётся убрать
+            # Показываем, сколько банкоматов нужно убрать
             trimmed = trim_route_by_time(route,
                                          [calculate_travel_time(route[j], route[j + 1])
                                           for j in range(len(route) - 1)])
             removed = len(route) - len(trimmed)
-            print(f"  Чтобы уложиться, нужно убрать {removed} банкоматов с конца маршрута")
+            print(f"  Нужно убрать {removed} банкоматов, чтобы уложиться в 8 часов")
 
     print("\n" + "=" * 60)
     print(f"ИТОГО: {len(result['ok'])} маршрутов укладываются, "
-          f"{len(result['over_limit'])} требуют разбиения")
+          f"{len(result['over_limit'])} требуют корректировки")
     print("=" * 60 + "\n")
 
     return result
 
 
-def split_cluster(cluster: list, max_atms_per_route: int = None) -> list:
+def get_route_time(route: list) -> float:
     """
-    Разбивает кластер на части, если маршрут не укладывается в 8 часов.
+    Считает общее время маршрута (в пути + обслуживание + резерв).
+    Нужно для сравнения загруженности кластеров.
+    """
+    if len(route) < 2:
+        return 30 + len(route) * 15  # только резерв и обслуживание
 
-    Стратегия: жадное заполнение
-    1. Начинаем новый под-кластер
-    2. Добавляем банкоматы по одному
-    3. Как только время превышает 8 часов — начинаем новый под-кластер
+    travel_time = sum(
+        calculate_travel_time(route[i], route[i + 1])
+        for i in range(len(route) - 1)
+    )
+    _, total_time = check_workday_limit(route, travel_time)
+    return total_time
+
+
+def rebalance_clusters(clusters: list, routes: list, check_result: dict) -> tuple:
+    """
+    Перераспределяет банкоматы между 5 кластерами так,
+    чтобы каждый маршрут укладывался в 8 часов.
+
+    Алгоритм:
+    1. Из перегруженных кластеров убираем "лишние" банкоматы (с конца маршрута)
+    2. Добавляем их в кластеры с наименьшей загрузкой
+    3. Повторяем, пока все не уложатся или пока не закончатся попытки
 
     Параметры:
-        cluster — исходный кластер (список банкоматов)
-        max_atms_per_route — примерное максимальное количество на маршрут
-                              (если не указано, определяется автоматически)
+        clusters — исходные 5 кластеров
+        routes — исходные 5 маршрутов
+        check_result — результат проверки (ok / over_limit)
 
-    Возвращает список под-кластеров
+    Возвращает:
+        (новые_кластеры, новые_маршруты)
     """
-    if not cluster:
-        return []
+    max_attempts = 10  # Максимальное количество итераций перераспределения
+    attempt = 0
 
-    # Если max_atms_per_route не задан, оцениваем его
-    if max_atms_per_route is None:
-        # Грубая оценка: среднее время на банкомат ~ 20-25 минут
-        # 480 минут / 20 минут = 24 банкомата максимум
-        # Берём с запасом 20
-        max_atms_per_route = 20
+    # Работаем с копиями, чтобы не испортить оригиналы
+    new_clusters = [list(c) for c in clusters]
 
-    sub_clusters = []
-    current_sub = []
-    current_time = 30  # начальный резерв
+    while check_result["over_limit"] and attempt < max_attempts:
+        attempt += 1
+        print(f"\nИтерация {attempt}: перераспределение банкоматов...")
 
-    # Строим временный жадный маршрут для этого кластера
-    # (потом Луиза перестроит его нормально)
-    remaining = list(cluster)
+        # Находим самый перегруженный кластер (тот, что дал больше всего превышения)
+        overloaded_idx = None
+        max_overhead = 0
 
-    while remaining:
-        atm = remaining.pop(0)
-        current_sub.append(atm)
+        for idx in check_result["over_limit"]:
+            route = routes[idx]
+            travel_time = sum(
+                calculate_travel_time(route[j], route[j + 1])
+                for j in range(len(route) - 1)
+            ) if len(route) >= 2 else 0
+            _, total_time = check_workday_limit(route, travel_time)
+            overhead = total_time - 480
 
-        # Считаем примерное время для текущего под-кластера
-        if len(current_sub) >= 2:
-            # Время между предыдущим и текущим
-            travel = calculate_travel_time(current_sub[-2], current_sub[-1])
-        else:
-            travel = 0
+            if overhead > max_overhead:
+                max_overhead = overhead
+                overloaded_idx = idx
 
-        current_time += travel + 15  # 15 минут на обслуживание
+        if overloaded_idx is None:
+            break
 
-        # Если превысили лимит или достигли максимума — завершаем под-кластер
-        if current_time > 450 or len(current_sub) >= max_atms_per_route:  # 450 = 480 - запас
-            if len(current_sub) > 1:
-                # Убираем последний банкомат (он не влез)
-                removed = current_sub.pop()
-                remaining.insert(0, removed)
+        # Определяем, сколько банкоматов нужно убрать из перегруженного кластера
+        route = routes[overloaded_idx]
+        travel_times = [calculate_travel_time(route[j], route[j + 1])
+                       for j in range(len(route) - 1)] if len(route) >= 2 else []
+        trimmed = trim_route_by_time(route, travel_times)
+        excess_atms = route[len(trimmed):]  # Банкоматы, которые не влезли
 
-            if current_sub:
-                sub_clusters.append(current_sub)
+        if not excess_atms:
+            # Если нечего убирать, но всё ещё превышение — убираем последний
+            excess_atms = [route[-1]]
 
-            # Начинаем новый под-кластер
-            current_sub = []
-            current_time = 30
+        print(f"  Из кластера {overloaded_idx + 1} убрано {len(excess_atms)} банкоматов")
 
-    # Добавляем остаток
-    if current_sub:
-        sub_clusters.append(current_sub)
+        # Убираем лишние банкоматы из кластера
+        for atm in excess_atms:
+            if atm in new_clusters[overloaded_idx]:
+                new_clusters[overloaded_idx].remove(atm)
 
-    return sub_clusters
-
-
-def rebuild_routes_for_split_clusters(problem_clusters: list,
-                                      routes: list,
-                                      check_result: dict) -> list:
-    """
-    Для кластеров с превышением времени разбивает их и строит новые маршруты.
-
-    Параметры:
-        problem_clusters — исходные кластеры (список списков банкоматов)
-        routes — исходные маршруты
-        check_result — результат проверки (словарь с ключами "ok" и "over_limit")
-
-    Возвращает новый список маршрутов (для всех кластеров)
-    """
-    new_routes = []
-    new_clusters_info = []
-
-    for i, route in enumerate(routes):
-        if i in check_result["over_limit"]:
-            print(f"\n🔧 Разбиваю кластер {i + 1} ({len(problem_clusters[i])} банкоматов)...")
-
-            # Разбиваем кластер
-            sub_clusters = split_cluster(problem_clusters[i])
-
-            print(f"   Получилось {len(sub_clusters)} частей:")
-            for j, sub in enumerate(sub_clusters):
-                print(f"     Часть {j + 1}: {len(sub)} банкоматов")
-
-            # Строим новый маршрут для каждой части
-            for sub in sub_clusters:
-                if len(sub) >= 2:
-                    new_route = nearest_neighbor_route(sub)
-                elif len(sub) == 1:
-                    new_route = sub
+        # Распределяем лишние банкоматы по кластерам с наименьшей загрузкой
+        for atm in excess_atms:
+            # Считаем загрузку всех кластеров (кроме перегруженного)
+            loads = []
+            for i, cluster in enumerate(new_clusters):
+                if i == overloaded_idx:
+                    loads.append((i, float('inf')))  # Не добавляем обратно в тот же кластер
                 else:
-                    continue
-                new_routes.append(new_route)
+                    # Строим временный маршрут с этим банкоматом
+                    temp_cluster = list(cluster) + [atm]
+                    if len(temp_cluster) >= 2:
+                        temp_route = nearest_neighbor_route(temp_cluster)
+                        temp_time = get_route_time(temp_route)
+                    else:
+                        temp_time = get_route_time(temp_cluster)
+                    loads.append((i, temp_time))
 
-            new_clusters_info.append({
-                "original_index": i,
-                "split_into": len(sub_clusters),
-                "parts": [len(s) for s in sub_clusters]
-            })
-        else:
-            # Кластер в порядке, оставляем как есть
-            new_routes.append(route)
+            # Находим кластер с минимальной загрузкой, который ещё укладывается в 8 часов
+            loads.sort(key=lambda x: x[1])
 
-    print(f"\n📊 После разбиения:")
-    print(f"   Было маршрутов: {len(routes)}")
-    print(f"   Стало маршрутов: {len(new_routes)}")
+            placed = False
+            for idx, load_time in loads:
+                if load_time <= 480:  # Если добавление не нарушает лимит
+                    new_clusters[idx].append(atm)
+                    print(f"    Банкомат {atm.id} → кластер {idx + 1} (будет {load_time:.0f} мин)")
+                    placed = True
+                    break
 
-    return new_routes
+            if not placed:
+                # Если никуда не влезает — кладём в наименее загруженный кластер
+                best_idx = loads[0][0]
+                new_clusters[best_idx].append(atm)
+                print(f"    Банкомат {atm.id} → кластер {best_idx + 1} (с превышением, требуется дальнейшая оптимизация)")
+
+        # Перестраиваем все маршруты
+        new_routes = []
+        for cluster in new_clusters:
+            if len(cluster) >= 2:
+                new_routes.append(nearest_neighbor_route(cluster))
+            elif len(cluster) == 1:
+                new_routes.append(cluster)
+            else:
+                new_routes.append([])
+
+        # Проверяем снова
+        check_result = check_all_routes(new_clusters, new_routes)
+        routes = new_routes
+
+        # Если после перераспределения всё ещё есть проблемы —
+        # в следующей итерации попробуем снова
+
+    print(f"\nПосле {attempt} итераций перераспределения:")
+    print(f"   Количество кластеров: {len(new_clusters)}")
+    for i, c in enumerate(new_clusters):
+        print(f"   Кластер {i + 1}: {len(c)} банкоматов")
+
+    return new_clusters, routes
 
 
 # ============================================================
@@ -198,11 +217,11 @@ if __name__ == "__main__":
 
     print("Тестирование проверки маршрутов...")
 
-    # Генерируем 1000 банкоматов (или меньше для теста)
+    # Генерируем банкоматы
     test_atms = generate_atms(100)  # 100 для быстрого теста
     print(f"Сгенерировано банкоматов: {len(test_atms)}")
 
-    # Кластеризуем
+    # Кластеризуем (строго 5 кластеров — по числу инкассаторов)
     clusters = cluster_atms(test_atms, n_clusters=5)
     print(f"Кластеров: {len(clusters)}")
     for i, c in enumerate(clusters):
@@ -222,9 +241,20 @@ if __name__ == "__main__":
     # Проверяем
     check_result = check_all_routes(clusters, routes)
 
-    # Если есть проблемы — разбиваем
+    # Если есть проблемы — перераспределяем банкоматы
     if check_result["over_limit"]:
-        print("Обнаружены проблемные кластеры, выполняю разбиение...")
-        new_routes = rebuild_routes_for_split_clusters(clusters, routes, check_result)
+        print("Обнаружены проблемные кластеры, перераспределяю банкоматы...")
+        new_clusters, new_routes = rebalance_clusters(clusters, routes, check_result)
+
+        print("\n" + "=" * 60)
+        print("ФИНАЛЬНАЯ ПРОВЕРКА ПОСЛЕ ПЕРЕРАСПРЕДЕЛЕНИЯ")
+        print("=" * 60)
+        final_check = check_all_routes(new_clusters, new_routes)
+
+        if final_check["over_limit"]:
+            print("\nВнимание: не все маршруты укладываются в 8 часов.")
+            print("   Требуется ручная оптимизация или пересмотр количества инкассаторов.")
+        else:
+            print("\nВсе 5 маршрутов укладываются в 8 часов!")
     else:
-        print("Все маршруты укладываются в 8 часов! 🎉")
+        print("Все маршруты укладываются в 8 часов!")
