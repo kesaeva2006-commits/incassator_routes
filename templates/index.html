@@ -446,6 +446,18 @@
             `;
         }
     }
+    // Функция для загрузки банкоматов с сервера
+async function loadAtms() {
+    try {
+        const response = await fetch('/atms');
+        const atms = await response.json();
+        console.log('Загружено банкоматов:', atms.length);
+        return atms;
+    } catch (error) {
+        console.log('Сервер недоступен, банкоматы загружаются из map.html');
+        return [];
+    }
+}
 </script>
 
 </body>
