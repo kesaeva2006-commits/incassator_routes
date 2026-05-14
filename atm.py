@@ -69,3 +69,61 @@ class Atm: # Класс, описывающий банкомат
         """Читаемый вид объекта для логов и отладки."""
         return (f"Atm(id={self.id}, lat={self.lat:.4f}, lon={self.lon:.4f}, "
                 f"cap_in={self.capacity_in}, cap_out={self.capacity_out})")
+
+    def predict_level_after_hours(self, hours: float) -> tuple:
+        """
+        Прогнозирует уровень бункеров через заданное количество часов.
+
+        Формула: текущий_уровень + (среднее × часы) ± 2 сигмы.
+        Используем ± 2 сигмы для 95% доверительного интервала.
+
+        :param hours: через сколько часов делаем прогноз
+        :return: (предполагаемый_уровень_приема, предполагаемый_уровень_выдачи)
+        """
+        import math
+
+        # Сколько купюр в среднем внесут за это время
+        total_in_mean = self.mean_in * hours
+        # Плюс "запас" на разброс (2 стандартных отклонения)
+        total_in_worst = total_in_mean + 2 * self.std_in * math.sqrt(hours)
+
+        # Сколько купюр в среднем снимут за это время
+        total_out_mean = self.mean_out * hours
+        # Худший случай для выдачи
+        total_out_worst = total_out_mean + 2 * self.std_out * math.sqrt(hours)
+
+        # Прогнозируемые уровни
+        predicted_in = self.current_in + total_in_worst
+        predicted_out = self.current_out - total_out_worst
+
+        return predicted_in, predicted_out
+
+    def is_critical(self, hours_ahead: float = 24) -> tuple:
+        """
+        Определяет статус критичности банкомата.
+
+        :param hours_ahead: на сколько часов вперёд делаем прогноз (по умолчанию 24)
+        :return: (is_critical: bool, status: str)
+                 status может быть:
+                 - "RED_IN_OVERFLOW" — бункер приёма переполнится (>90%)
+                 - "RED_OUT_EMPTY" — бункер выдачи опустеет (<10%)
+                 - "YELLOW" — внимание (приём >70% или выдача <30%)
+                 - "GREEN" — всё в норме
+        """
+        pred_in, pred_out = self.predict_level_after_hours(hours_ahead)
+
+        # Процент заполненности бункера приёма
+        in_pct = (pred_in / self.capacity_in) * 100 if self.capacity_in > 0 else 0
+
+        # Процент заполненности бункера выдачи
+        out_pct = (pred_out / self.capacity_out) * 100 if self.capacity_out > 0 else 100
+
+        # Проверяем критические состояния
+        if in_pct > 90:
+            return True, "RED_IN_OVERFLOW"
+        if out_pct < 10:
+            return True, "RED_OUT_EMPTY"
+        if in_pct > 70 or out_pct < 30:
+            return True, "YELLOW"
+
+        return False, "GREEN"

@@ -1,5 +1,6 @@
 name: Python CI
 
+# Запуск при пуше в main и при создании Pull Request в main
 on:
   push:
     branches: [ "main" ]
@@ -10,14 +11,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+    # 1. Клонируем репозиторий
     - uses: actions/checkout@v4
+
+    # 2. Устанавливаем Python версии 3.12 (как у всех в команде)
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
+
+    # 3. Устанавливаем зависимости (прямая установка, если requirements.txt не работает)
     - name: Install dependencies
       run: |
-        pip install pytest
+        pip install pytest numpy scikit-learn
+
+    # 4. Запускаем все тесты из папки tests
     - name: Run tests
       run: |
         pytest tests/
