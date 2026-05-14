@@ -5,7 +5,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from atm import Atm
-from generator import generate_test_atms as generate_atms  # Алиас: переименовываем для удобства
+from generator import generate_atms  # Алиас: переименовываем для удобства
 from greedy_algorithm import nearest_neighbor_route, distance
 
 # ТЕСТЫ ДЛЯ ФУНКЦИИ distance
