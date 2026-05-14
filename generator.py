@@ -2,11 +2,11 @@ import random
 from atm import Atm
 
 
-def generate_atms(count: int = 10, seed: int = 42) -> list[Atm]:
+def generate_atms(count: int = 1000, seed: int = 42) -> list[Atm]:
     """
     Генерирует список банкоматов.
 
-    :param count: количество банкоматов (можно 10 или 1000 для спринта 2)
+    :param count: количество банкоматов (1000 для спринта 2)
     :param seed: фиксирует генератор случайных чисел для повторяемости результатов
     :return: список объектов Atm
     """
