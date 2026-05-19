@@ -63,3 +63,4 @@ def test_is_critical_returns_tuple():
     result = atm.is_critical()
     assert isinstance(result, tuple)
     assert len(result) == 2
+    
