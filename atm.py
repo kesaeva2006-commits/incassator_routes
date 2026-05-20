@@ -127,3 +127,72 @@ class Atm: # Класс, описывающий банкомат
             return True, "YELLOW"
 
         return False, "GREEN"
+
+    # ============================================================
+    # НОВЫЕ МЕТОДЫ ДЛЯ СПРИНТА 3
+    # ============================================================
+
+    def predict_inflow(self, hours: float) -> float:
+        """
+        Прогноз поступлений в бункер приёма через N часов.
+
+        Формула: текущий_уровень + среднее_поступлений × часы + 2σ√часы
+
+        :param hours: через сколько часов делаем прогноз
+        :return: прогнозируемый уровень бункера приёма
+        """
+        import math
+        total_in_mean = self.mean_in * hours
+        total_in_worst = total_in_mean + 2 * self.std_in * math.sqrt(hours)
+        return self.current_in + total_in_worst
+
+    def predict_outflow(self, hours: float) -> float:
+        """
+        Прогноз выдач из бункера выдачи через N часов.
+
+        Формула: текущий_уровень - (среднее_снятий × часы + 2σ√часы)
+
+        :param hours: через сколько часов делаем прогноз
+        :return: прогнозируемый остаток в бункере выдачи
+        """
+        import math
+        total_out_mean = self.mean_out * hours
+        total_out_worst = total_out_mean + 2 * self.std_out * math.sqrt(hours)
+        return self.current_out - total_out_worst
+
+    def get_risk_level(self, hours_ahead: float = 24) -> str:
+        """
+        Определяет уровень риска банкомата.
+
+        :param hours_ahead: на сколько часов вперёд прогноз
+        :return: "RED" — критично (>90% приёма или <10% выдачи)
+                 "YELLOW" — внимание (>70% приёма или <30% выдачи)
+                 "GREEN" — норма
+        """
+        pred_in = self.predict_inflow(hours_ahead)
+        pred_out = self.predict_outflow(hours_ahead)
+
+        in_pct = (pred_in / self.capacity_in) * 100 if self.capacity_in > 0 else 0
+        out_pct = (pred_out / self.capacity_out) * 100 if self.capacity_out > 0 else 100
+
+        if in_pct > 90 or out_pct < 10:
+            return "RED"
+        if in_pct > 70 or out_pct < 30:
+            return "YELLOW"
+        return "GREEN"
+
+    def update_levels(self, hours_passed: float):
+        """
+        Обновляет текущие уровни бункеров после прошедшего времени.
+        Вызывается в конце каждого дня для пересчёта перед следующим днём.
+
+        :param hours_passed: сколько часов прошло (обычно 24)
+        """
+        import math
+        # Обновляем бункер приёма (люди внесли деньги)
+        total_in = self.mean_in * hours_passed
+        self.current_in = min(self.capacity_in, self.current_in + total_in)
+
+        # Обновляем бункер выдачи (люди сняли деньги)
+        total_out = self.mean_out * hours_passed
+        self.current_out = max(0, self.current_out - total_out)
