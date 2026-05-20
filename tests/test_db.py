@@ -96,3 +96,4 @@ def test_load_atms_empty_db(mock_conn):
 
     result = load_atms()
     assert result == []  # должен вернуться пустой список
+    
