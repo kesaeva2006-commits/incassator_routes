@@ -18,7 +18,7 @@ jobs:
         pip install pytest numpy scikit-learn psycopg2-binary osmnx networkx
     - name: Run tests
       run: |
-        python -m pytest tests/
+        python -m pytest tests/ -v
       env:
         PYTHONPATH: ${{ github.workspace }}
         
