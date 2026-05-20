@@ -1,6 +1,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)).replace('/tests', ''))
 
 from unittest.mock import patch, MagicMock  # инструменты для подмены функций в тестах
 from atm import Atm
