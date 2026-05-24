@@ -1,11 +1,9 @@
 name: Python CI
-
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
-
+    branches: [ "develop" ]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -21,10 +19,16 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install -r requirements.txt  # ← ГЛАВНОЕ: устанавливаем всё из requirements.txt
+        pip install -r requirements.txt
     
     - name: Run tests
       run: |
         python -m pytest tests/ -v
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+    
+    - name: Run build
+      run: |
+        python build_routes.py
       env:
         PYTHONPATH: ${{ github.workspace }}
