@@ -1,31 +1,54 @@
 import folium
-import requests
 import json
 import os
 import random
 import math
+from atm import Atm   # ← импортируем класс банкомата
 
-# ============================================================
-#  Генерация карт Москвы: банкоматы + 5 маршрутов разными цветами
+#  Генерация карт Москвы: банкоматы цветом по риску + 5 маршрутов
 #  Для каждого дня создаётся отдельный файл: map_day1.html, map_day2.html, map_day3.html
-#  Frontend — отображение 5 маршрутов цветами + переключение по дням (задача 3.9)
-# ============================================================
+#  Frontend — отображение рисков (зелёный/жёлтый/красный) + легенда + кнопки дней
 
-# --- 1. Загрузка банкоматов ---
-# Сначала пробуем локальный atms.json (так работает в GitHub Actions и локально),
-# если его нет — скачиваем из репозитория по сети (запасной вариант).
+# --- 1. Загрузка банкоматов и создание объектов Atm ---
 ATMS_URL = 'https://raw.githubusercontent.com/kesaeva2006-commits/incassator_routes/feature/backend/atms.json'
+
 if os.path.exists('atms.json'):
     with open('atms.json', encoding='utf-8') as f:
-        atms = json.load(f)
+        atms_data = json.load(f)
 else:
-    atms = requests.get(ATMS_URL).json()
+    import requests
+    atms_data = requests.get(ATMS_URL).json()
 
-# --- Цвета и названия 5 машин ---
-colors = ['red', 'blue', 'green', 'orange', 'purple']
-names = ['Машина 1', 'Машина 2', 'Машина 3', 'Машина 4', 'Машина 5']
+# Превращаем словари в объекты Atm
+atms = []
+for item in atms_data:
+    atm = Atm(
+        atm_id=item['id'],
+        lat=item['lat'],
+        lon=item['lon'],
+        capacity_in=item['capacity_in'],
+        capacity_out=item['capacity_out'],
+        mean_in=item.get('mean_in', 0.0),
+        std_in=item.get('std_in', 0.0),
+        mean_out=item.get('mean_out', 0.0),
+        std_out=item.get('std_out', 0.0)
+    )
+    # Инициализируем текущие уровни (в atms.json их нет, ставим начало дня)
+    atm.current_in = 0
+    atm.current_out = atm.capacity_out
+    atms.append(atm)
 
-# Сколько дней (карта на каждый день)
+# --- Цвета для маршрутов (5 машин) ---
+route_colors = ['red', 'blue', 'green', 'orange', 'purple']
+route_names = ['Машина 1', 'Машина 2', 'Машина 3', 'Машина 4', 'Машина 5']
+
+# --- Цвета для риска банкоматов ---
+risk_colors = {
+    'GREEN': '#2ecc71',   # ярко-зелёный
+    'YELLOW': '#f1c40f',  # жёлтый
+    'RED': '#e74c3c'      # красный
+}
+
 DAYS = 3
 
 
@@ -72,10 +95,6 @@ def load_routes_for_day(day):
     """
     Возвращает список маршрутов (5 машин) на конкретный день.
     Каждый маршрут — список точек [lat, lon] в порядке объезда.
-
-    Источник:
-      1) routes.json (если есть) — реальные маршруты, фильтр по дню day;
-      2) если файла нет — демо-маршруты (одинаковые для всех дней).
     """
     if os.path.exists('routes.json'):
         with open('routes.json', encoding='utf-8') as f:
@@ -85,51 +104,89 @@ def load_routes_for_day(day):
         routes = []
         for block in day_blocks:
             stops = block.get('stops', [])
-            coords = [[p['lat'], p['lon']] if isinstance(p, dict) else p for p in stops]
+            coords = [[p[0], p[1]] if isinstance(p, list) else [p['lat'], p['lon']] for p in stops]
             routes.append(coords)
         return routes
 
     # Демо (нет routes.json)
-    points = [[a['lat'], a['lon']] for a in atms]
+    points = [[a.lat, a.lon] for a in atms]
     clusters = kmeans_5(points, k=5)
     return [nearest_neighbor_order(c) for c in clusters]
 
 
+def add_legend(m):
+    """Добавляет легенду с пояснением цветов риска в правый нижний угол карты."""
+    legend_html = '''
+    <div style="position: fixed; 
+                bottom: 30px; right: 30px; 
+                background-color: white; 
+                border: 2px solid #ccc; 
+                border-radius: 8px; 
+                padding: 10px 15px; 
+                z-index: 1000;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        <strong>Уровень риска банкомата</strong><br>
+        <span style="background-color: #2ecc71; width: 20px; height: 20px; display: inline-block; border-radius: 50%; margin-right: 8px;"></span> Зелёный — норма<br>
+        <span style="background-color: #f1c40f; width: 20px; height: 20px; display: inline-block; border-radius: 50%; margin-right: 8px;"></span> Жёлтый — внимание (заполнение >70% или выдача <30%)<br>
+        <span style="background-color: #e74c3c; width: 20px; height: 20px; display: inline-block; border-radius: 50%; margin-right: 8px;"></span> Красный — критично (>90% приёма или <10% выдачи)
+    </div>
+    '''
+    m.get_root().html.add_child(folium.Element(legend_html))
+
+
 def build_map_for_day(day):
     """Строит и сохраняет карту map_dayN.html для указанного дня."""
+    # --- Обновляем уровни банкоматов до этого дня ---
+    # В день 1 уровни начальные (current_in=0, current_out=capacity_out)
+    # В день 2 — после 24 часов работы, в день 3 — после 48 часов и т.д.
+    hours_passed = 24 * (day - 1)
+    for atm in atms:
+        atm.current_in = 0  # сброс к начальному состоянию
+        atm.current_out = atm.capacity_out
+        atm.update_levels(hours_passed)
+
     m = folium.Map(location=[55.75, 37.62], zoom_start=11)
 
-    # Точки банкоматов
+    # --- Точки банкоматов с цветом по уровню риска ---
+    # Риск считается на день вперёд (hours_ahead=24) — прогноз заполнения за сутки
     for atm in atms:
+        risk = atm.get_risk_level(hours_ahead=24)
+        color = risk_colors.get(risk, '#279ed1')
+        
         folium.CircleMarker(
-            location=[atm['lat'], atm['lon']],
-            radius=3,
-            color='#279ed1',
+            location=[atm.lat, atm.lon],
+            radius=5,  # чуть больше, чтобы цвет был заметен
+            color=color,
             fill=True,
-            fill_color='#279ed1',
-            popup=f"ID: {atm['id']}"
+            fill_color=color,
+            fill_opacity=0.7,
+            popup=f"ID: {atm.id} | Риск: {risk}"
         ).add_to(m)
 
-    # 5 маршрутов разными цветами
+    # --- 5 маршрутов разными цветами ---
     routes = load_routes_for_day(day)
     for i, route_coords in enumerate(routes[:5]):
         if not route_coords:
             continue
         folium.PolyLine(
             route_coords,
-            color=colors[i],
+            color=route_colors[i],
             weight=3,
             opacity=0.8,
-            popup=f"{names[i]} (день {day})"
+            popup=f"{route_names[i]} (день {day})"
         ).add_to(m)
 
-    # Сохраняем карту в папку templates/ — рядом с index.html,
-    # чтобы iframe (src="map_dayN.html") нашёл её.
+    # --- Добавляем легенду ---
+    add_legend(m)
+
+    # --- Сохраняем карту в папку templates/ ---
     output_dir = 'templates'
     os.makedirs(output_dir, exist_ok=True)
     filename = os.path.join(output_dir, f'map_day{day}.html')
     m.save(filename)
-    print(f"Карта дня {day} готова: {filename}")
+    print(f"Карта дня {day} готова: {filename} (банкоматы раскрашены по риску, легенда добавлена)")
 
 
 # --- Генерируем карту для каждого дня ---
