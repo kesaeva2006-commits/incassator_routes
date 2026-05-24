@@ -456,7 +456,7 @@
         
         try {
             // Загружаем routes.json из корня репозитория
-            const response = await fetch('/routes.json');
+            const response = await fetch('routes.json');
             if (!response.ok) throw new Error('Файл routes.json не найден');
             const allRoutes = await response.json();
             
