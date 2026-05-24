@@ -35,8 +35,12 @@ def generate_atms(count: int = 10, seed: int = 42) -> list[Atm]:
         cap_in = random.randint(8000, 30000)   # приём денег
         cap_out = random.randint(10000, 25000)  # выдача денег
 
+        mean_in = random.uniform(100, 800)
+        std_in  = random.uniform(20, 150)
+        mean_out = random.uniform(50, 500)
+        std_out = random.uniform(10, 100)
+
         # Создаём объект банкомата
-        # Пока статистика (mean/std) не используется → ставим 0
         atm = Atm(
             atm_id=i,               # уникальный ID
             lat=lat,                # широта
@@ -44,10 +48,12 @@ def generate_atms(count: int = 10, seed: int = 42) -> list[Atm]:
             capacity_in=cap_in,     # максимум приёма
             capacity_out=cap_out,   # максимум выдачи
 
-            mean_in=0, std_in=0,    # статистика внесений
-            mean_out=0, std_out=0   # статистика снятий
+            mean_in=mean_in, # статистика внесений
+            std_in=std_in,
+            mean_out=mean_out, # статистика снятий
+            std_out=std_out
         )
-
+            
         # Добавляем банкомат в список
         atms.append(atm)
 
