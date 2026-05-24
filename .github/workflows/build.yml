@@ -29,8 +29,13 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements-build.txt
+     
+      # 4.1 Новый шаг
+      - name: Generate atms.json with statistics
+        run: python generate_atms_json.py
+          
 
-      # 4. Собираем маршруты: atms.json -> routes.json
+      # 4.2 Собираем маршруты: atms.json -> routes.json
       - name: Build routes.json
         run: python build_routes.py
         env:
