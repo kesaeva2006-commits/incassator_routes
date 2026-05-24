@@ -66,3 +66,5 @@ def test_nearest_neighbor_route_single_atm(mock_tt):
     route = nearest_neighbor_route(atms, use_graph=False)
     assert len(route) == 1
     assert route[0] == atms[0]
+
+
