@@ -449,38 +449,53 @@
     </div>
 
 <script>
-    document.getElementById('btnBuildRoute').addEventListener('click', function() {
-        // Показываем блоки
-        document.getElementById('resultBox').classList.add('show');
-        document.getElementById('mapArea').classList.add('show');
-        document.getElementById('dayTabs').classList.add('show');
-        this.textContent = 'Обновить маршрут';
-        
-        // Загружаем данные
-        loadRoutes(1);
-    });
-
-    // Функция для загрузки данных с сервера
+    // Функция для загрузки маршрутов из routes.json
     async function loadRoutes(day) {
-        // Показываем индикатор загрузки
-        document.getElementById('resultBox').innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
+        const resultBox = document.getElementById('resultBox');
+        resultBox.innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
         
         try {
-            const response = await fetch(`/routes?day=${day}`);
-            const routes = await response.json();
+            // Загружаем routes.json из корня репозитория
+            const response = await fetch('/routes.json');
+            if (!response.ok) throw new Error('Файл routes.json не найден');
+            const allRoutes = await response.json();
             
-            // Строим HTML с реальными данными
+            // Фильтруем по дню и сортируем по номеру машины
+            const dayRoutes = allRoutes.filter(r => r.day == day).sort((a,b) => a.car - b.car);
+            if (dayRoutes.length === 0) throw new Error('Нет маршрутов для этого дня');
+            
             let html = '<div class="result-title">Построенные маршруты</div>';
-            routes.forEach(route => {
+            dayRoutes.forEach(route => {
+                const stopsCount = route.stops.length;
+                
+                // Рассчитываем примерное время в пути (минуты)
+                let totalMinutes = 0;
+                const points = route.stops;
+                for (let i = 1; i < points.length; i++) {
+                    const [lat1, lon1] = points[i-1];
+                    const [lat2, lon2] = points[i];
+                    // Формула гаверсинусов для расстояния в км
+                    const R = 6371;
+                    const dLat = (lat2 - lat1) * Math.PI / 180;
+                    const dLon = (lon2 - lon1) * Math.PI / 180;
+                    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                    const km = R * c;
+                    // Время в минутах при скорости 40 км/ч
+                    totalMinutes += (km / 40) * 60;
+                }
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = Math.round(totalMinutes % 60);
+                
                 html += `<div class="result-item">
                     <span class="result-icon">🚗</span>
-                    <span><strong>Машина ${route.group_id}</strong> — ${route.stops.length} банкоматов, ${Math.round(route.total_time / 60)} ч ${route.total_time % 60} мин</span>
+                    <span><strong>Машина ${route.car}</strong> — ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
                 </div>`;
             });
-            document.getElementById('resultBox').innerHTML = html;
+            resultBox.innerHTML = html;
         } catch (error) {
-            // Если сервер недоступен — показываем демо-данные
-            document.getElementById('resultBox').innerHTML = `
+            // Если routes.json недоступен — показываем демо-данные
+            resultBox.innerHTML = `
                 <div class="result-title">Построенные маршруты</div>
                 <div class="result-item"><span class="result-icon">🚗</span><span><strong>Машина 1</strong> — 18 банкоматов, 7 ч 20 мин</span></div>
                 <div class="result-item"><span class="result-icon">🚙</span><span><strong>Машина 2</strong> — 15 банкоматов, 6 ч 50 мин</span></div>
@@ -494,24 +509,31 @@
             `;
         }
     }
-    // Переключение дней: меняем карту в iframe и подгружаем маршруты дня
-    document.querySelectorAll('.day-btn').forEach(function(btn) {
+
+    // Обработчик кнопки «Построить маршрут»
+    document.getElementById('btnBuildRoute').addEventListener('click', function() {
+        document.getElementById('resultBox').classList.add('show');
+        document.getElementById('mapArea').classList.add('show');
+        document.getElementById('dayTabs').classList.add('show');
+        this.textContent = 'Обновить маршрут';
+        loadRoutes(1);  // по умолчанию показываем день 1
+    });
+
+    // Переключение дней (кнопки)
+    document.querySelectorAll('.day-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const day = this.getAttribute('data-day');
-
-            // Подсветка активной кнопки
+            // Активная кнопка
             document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-
-            // Меняем карту в iframe на карту выбранного дня
+            // Меняем карту
             document.getElementById('mapFrame').src = `map_day${day}.html`;
-
-            // Обновляем список машин для этого дня
+            // Обновляем карточки машин
             loadRoutes(day);
         });
     });
 
-    // Функция для загрузки банкоматов с сервера
+    // Функция загрузки банкоматов (оставлена для совместимости, не используется)
     async function loadAtms() {
         try {
             const response = await fetch('/atms');
