@@ -11,10 +11,15 @@ import math
 #  Frontend — отображение 5 маршрутов цветами + переключение по дням (задача 3.9)
 # ============================================================
 
-# --- 1. Загрузка банкоматов (данные от backend) ---
-url = 'https://raw.githubusercontent.com/kesaeva2006-commits/incassator_routes/feature/backend/atms.json'
-response = requests.get(url)
-atms = response.json()
+# --- 1. Загрузка банкоматов ---
+# Сначала пробуем локальный atms.json (так работает в GitHub Actions и локально),
+# если его нет — скачиваем из репозитория по сети (запасной вариант).
+ATMS_URL = 'https://raw.githubusercontent.com/kesaeva2006-commits/incassator_routes/feature/backend/atms.json'
+if os.path.exists('atms.json'):
+    with open('atms.json', encoding='utf-8') as f:
+        atms = json.load(f)
+else:
+    atms = requests.get(ATMS_URL).json()
 
 # --- Цвета и названия 5 машин ---
 colors = ['red', 'blue', 'green', 'orange', 'purple']
@@ -118,7 +123,11 @@ def build_map_for_day(day):
             popup=f"{names[i]} (день {day})"
         ).add_to(m)
 
-    filename = f'map_day{day}.html'
+    # Сохраняем карту в папку templates/ — рядом с index.html,
+    # чтобы iframe (src="map_dayN.html") нашёл её.
+    output_dir = 'templates'
+    os.makedirs(output_dir, exist_ok=True)
+    filename = os.path.join(output_dir, f'map_day{day}.html')
     m.save(filename)
     print(f"Карта дня {day} готова: {filename}")
 
