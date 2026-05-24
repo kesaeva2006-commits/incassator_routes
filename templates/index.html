@@ -343,6 +343,47 @@
         z-index: 1;
     }
 
+    /* Кнопки переключения дней */
+    .day-tabs {
+        display: none;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 4px;
+    }
+
+    .day-tabs.show {
+        display: flex;
+    }
+
+    .day-btn {
+        background: #ffffff;
+        border: 1.5px solid #cfe3ec;
+        color: #1f779e;
+        padding: 10px 26px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .day-btn:hover {
+        border-color: #1f779e;
+        background: #f3f9fc;
+        transform: translateY(-2px);
+    }
+
+    .day-btn.active {
+        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 8px 18px -6px rgba(26, 95, 122, 0.5);
+    }
+
     /* Футер */
     .footer {
         margin-top: 32px;
@@ -394,8 +435,14 @@
             </div>
         </div>
         
+        <div class="day-tabs" id="dayTabs">
+            <button class="day-btn active" data-day="1">День 1</button>
+            <button class="day-btn" data-day="2">День 2</button>
+            <button class="day-btn" data-day="3">День 3</button>
+        </div>
+        
         <div class="map-area" id="mapArea">
-            <iframe src="map.html" width="100%" height="400px" style="border: none; border-radius: 16px;"></iframe>
+            <iframe src="map_day1.html" id="mapFrame" width="100%" height="400px" style="border: none; border-radius: 16px;"></iframe>
         </div>
         
         <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
@@ -406,6 +453,7 @@
         // Показываем блоки
         document.getElementById('resultBox').classList.add('show');
         document.getElementById('mapArea').classList.add('show');
+        document.getElementById('dayTabs').classList.add('show');
         this.textContent = 'Обновить маршрут';
         
         // Загружаем данные
@@ -446,18 +494,35 @@
             `;
         }
     }
+    // Переключение дней: меняем карту в iframe и подгружаем маршруты дня
+    document.querySelectorAll('.day-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const day = this.getAttribute('data-day');
+
+            // Подсветка активной кнопки
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            // Меняем карту в iframe на карту выбранного дня
+            document.getElementById('mapFrame').src = `map_day${day}.html`;
+
+            // Обновляем список машин для этого дня
+            loadRoutes(day);
+        });
+    });
+
     // Функция для загрузки банкоматов с сервера
-async function loadAtms() {
-    try {
-        const response = await fetch('/atms');
-        const atms = await response.json();
-        console.log('Загружено банкоматов:', atms.length);
-        return atms;
-    } catch (error) {
-        console.log('Сервер недоступен, банкоматы загружаются из map.html');
-        return [];
+    async function loadAtms() {
+        try {
+            const response = await fetch('/atms');
+            const atms = await response.json();
+            console.log('Загружено банкоматов:', atms.length);
+            return atms;
+        } catch (error) {
+            console.log('Сервер недоступен, банкоматы загружаются из map.html');
+            return [];
+        }
     }
-}
 </script>
 
 </body>
