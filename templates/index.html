@@ -455,7 +455,7 @@
         resultBox.innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
         
         try {
-            // Загружаем routes.json из корня репозитория
+            // Загружаем routes.json из той же папки (templates/)
             const response = await fetch('routes.json');
             if (!response.ok) throw new Error('Файл routes.json не найден');
             const allRoutes = await response.json();
@@ -463,6 +463,9 @@
             // Фильтруем по дню и сортируем по номеру машины
             const dayRoutes = allRoutes.filter(r => r.day == day).sort((a,b) => a.car - b.car);
             if (dayRoutes.length === 0) throw new Error('Нет маршрутов для этого дня');
+            
+            // Подсчитываем общее количество критических банкоматов за день
+            const totalCritical = dayRoutes.reduce((sum, route) => sum + (route.critical_count || 0), 0);
             
             let html = '<div class="result-title">Построенные маршруты</div>';
             dayRoutes.forEach(route => {
@@ -492,6 +495,13 @@
                     <span><strong>Машина ${route.car}</strong> — ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
                 </div>`;
             });
+            
+            // Добавляем блок с критическими банкоматами
+            html += `<div class="critical-alert">
+                        <span class="critical-dot"></span>
+                        Критических банкоматов: ${totalCritical} - требуется срочный объезд
+                    </div>`;
+            
             resultBox.innerHTML = html;
         } catch (error) {
             // Если routes.json недоступен — показываем демо-данные
