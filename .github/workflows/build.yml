@@ -24,11 +24,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      # 3. Ставим зависимости
+      # 3. Ставим лёгкие зависимости для сборки (без osmnx — он не нужен в быстром режиме)
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements-build.txt
 
       # 4. Собираем маршруты: atms.json -> routes.json
       - name: Build routes.json
