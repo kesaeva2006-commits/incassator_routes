@@ -30,11 +30,10 @@ def load_moscow_graph():
 
     # Скачиваем граф дорог Москвы по координатам
     G = ox.graph_from_bbox(
-        north=55.95, south=55.55,
-        east=37.95, west=37.30,
+        bbox=(55.95, 55.55, 37.95, 37.30),
         network_type="drive",
         simplify=True
-    )
+
     # Добавляем скорость движения на дорогах (км/ч)
     G = ox.add_edge_speeds(G)
 
