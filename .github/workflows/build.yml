@@ -66,3 +66,4 @@ jobs:
           git add routes.json templates/map_day1.html templates/map_day2.html templates/map_day3.html templates/routes.json
           git diff --staged --quiet || git commit -m "auto: пересборка routes.json и карт [skip ci]"
           git push
+  
