@@ -24,16 +24,24 @@ jobs:
         with:
           python-version: '3.12'
 
-      # 3. Ставим лёгкие зависимости для сборки (без osmnx — он не нужен в быстром режиме)
+      # 3. Ставим зависимости (теперь включая osmnx для точного режима по дорогам)
       - name: Install dependencies
         run: |
           pip install --upgrade pip
           pip install -r requirements-build.txt
-     
-      # 4.1 Новый шаг
+
+      # 3.1 Кэшируем граф Москвы между запусками Actions.
+      # Первый раз граф скачивается (~2-5 мин), сохраняется в moscow_graph.pkl.
+      # Все следующие запуски берут его из кэша — скачивания не будет.
+      - name: Cache Moscow graph
+        uses: actions/cache@v4
+        with:
+          path: moscow_graph.pkl
+          key: moscow-graph-v1
+
+      # 4.1 Новый шаг — генерируем банкоматы со статистикой
       - name: Generate atms.json with statistics
         run: python generate_atms_json.py
-          
 
       # 4.2 Собираем маршруты: atms.json -> routes.json
       - name: Build routes.json
