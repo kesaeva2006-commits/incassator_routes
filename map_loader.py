@@ -33,7 +33,7 @@ def load_moscow_graph():
         bbox=(55.95, 55.55, 37.95, 37.30),
         network_type="drive",
         simplify=True
-
+    )
     # Добавляем скорость движения на дорогах (км/ч)
     G = ox.add_edge_speeds(G)
 
