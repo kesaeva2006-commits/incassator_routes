@@ -7,11 +7,10 @@ build_routes.py — сборщик маршрутов для автоматич�
 
     [{"day": 1, "car": 1, "stops": [[lat, lon], ...], "critical_count": 5}, ...]
 
-Маршруты строятся функцией алгоритмиста nearest_neighbor_route в БЫСТРОМ режиме
-(use_graph=False): время между банкоматами оценивается по географическому
-расстоянию (route_utils.calculate_travel_time), без скачивания графа дорог
-OSMnx. Это позволяет собирать маршруты за секунды в чистом окружении GitHub
-Actions. Точный режим по реальным дорогам (use_graph=True) доступен локально.
+Маршруты строятся функцией алгоритмиста nearest_neighbor_route в ТОЧНОМ режиме
+(use_graph=True): время между банкоматами считается по реальной дорожной сети
+Москвы (OSMnx) через матрицу времён. Объезжаются только критические банкоматы
+(RED и YELLOW), зелёные пропускаются.
 
 Запускается автоматически в GitHub Actions — локально запускать не нужно.
 """
@@ -77,16 +76,15 @@ def build_one_day(atms, day):
     routes = []
     critical_counts = []
     for cluster in clusters:
-        if len(cluster) < 2:
-            route = list(cluster)
+        # оставляем только критические (RED и YELLOW), зелёные пропускаем
+        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
+        if len(urgent) < 2:
+            route = list(urgent)
         else:
-            # Сортируем банкоматы в кластере по приоритету (сначала красные, потом жёлтые, потом зелёные)
-            sorted_cluster = sorted(cluster, key=get_priority)
-            route = nearest_neighbor_route(sorted_cluster, use_graph=False)
+            sorted_urgent = sorted(urgent, key=get_priority)  # красные раньше жёлтых
+            route = nearest_neighbor_route(sorted_urgent, use_graph=True)
         routes.append(route)
-        # Подсчитываем количество критических банкоматов (RED или YELLOW)
-        critical = sum(1 for atm in route if atm.get_risk_level() in ('RED', 'YELLOW'))
-        critical_counts.append(critical)
+        critical_counts.append(len(route))  # все в маршруте критические
     
     return routes, critical_counts
 

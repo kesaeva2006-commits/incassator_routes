@@ -24,7 +24,7 @@ def cluster_atms(atms: list[Atm], n_clusters: int = 5) -> list[list[Atm]]:
     kmeans = KMeans(
         n_clusters=n_clusters,
         random_state=42,
-        n_init="auto"
+        n_init=10
     )
 
     # Обучаем модель и сразу получаем метки кластеров для каждой точки

@@ -6,11 +6,6 @@ from route_utils import calculate_travel_time
 def travel_time_between(a: Atm, b: Atm, G, atm_to_node: dict) -> float:
     """
     Считает реальное время в пути между двумя банкоматами по дорожному графу.
-    :param a: первый банкомат
-    :param b: второй банкомат
-    :param G: граф дорог (networkx)
-    :param atm_to_node: словарь соответствия банкомат → ближайший узел графа
-    :return: время в секундах (или бесконечность, если путь не найден)
     """
     node_a = atm_to_node[a.id]
     node_b = atm_to_node[b.id]
@@ -20,46 +15,76 @@ def travel_time_between(a: Atm, b: Atm, G, atm_to_node: dict) -> float:
         return float('inf')
 
 
-def nearest_neighbor_route(atms: list[Atm], start_atm: Atm | None = None,
+def build_time_matrix(atms, G, atm_to_node):
+    """
+    Строит матрицу времён между всеми парами банкоматов.
+    Один запуск Дейкстры на каждый банкомат находит время до ВСЕХ остальных.
+    Возвращает словарь: matrix[(id_a, id_b)] = время в секундах.
+    """
+    matrix = {}
+    for atm in atms:
+        source = atm_to_node[atm.id]
+        lengths = nx.single_source_dijkstra_path_length(G, source, weight='travel_time')
+        for other in atms:
+            dest = atm_to_node[other.id]
+            matrix[(atm.id, other.id)] = lengths.get(dest, float('inf'))
+    return matrix
+
+
+def nearest_neighbor_route_matrix(atms, G, atm_to_node):
+    """
+    Жадный маршрут с использованием готовой матрицы времён (быстро).
+    """
+    if not atms:
+        return []
+    matrix = build_time_matrix(atms, G, atm_to_node)
+    unvisited = atms.copy()
+    current = unvisited.pop(0)
+    route = [current]
+    while unvisited:
+        nearest = min(unvisited, key=lambda a: matrix[(current.id, a.id)])
+        route.append(nearest)
+        unvisited.remove(nearest)
+        current = nearest
+    return route
+
+
+def nearest_neighbor_route(atms: list[Atm], start_atm=None,
                            use_graph: bool = True) -> list[Atm]:
     """
     Строит маршрут обхода банкоматов жадным алгоритмом.
 
-    use_graph=True (по умолчанию) — точный расчёт по дорогам (OSMnx)
+    use_graph=True — точный расчёт по дорогам через матрицу времён (OSMnx)
     use_graph=False — быстрый расчёт по расстоянию (для CI)
     """
     if not atms:
         return []
 
-    # Подготовка функции расчёта времени
     if use_graph:
-        # Точный режим: импортируем ТОЛЬКО при необходимости
+        # Точный режим: загружаем граф один раз, строим матрицу, идём по ней
         from map_loader import load_moscow_graph
         from node_matcher import match_atms_to_nodes
-        
+
         G = load_moscow_graph()
         atm_to_node = match_atms_to_nodes(atms)
-        
-        def time_to(current, candidate):
-            return travel_time_between(current, candidate, G, atm_to_node)
+        return nearest_neighbor_route_matrix(atms, G, atm_to_node)
     else:
-        # Быстрый режим: без графа
+        # Быстрый режим: без графа, по географическому расстоянию
         def time_to(current, candidate):
             return calculate_travel_time(current, candidate)
 
-    # Жадный алгоритм
-    unvisited = atms.copy()
-    if start_atm:
-        current = start_atm
-        unvisited.remove(start_atm)
-    else:
-        current = unvisited.pop(0)
+        unvisited = atms.copy()
+        if start_atm:
+            current = start_atm
+            unvisited.remove(start_atm)
+        else:
+            current = unvisited.pop(0)
 
-    route = [current]
-    while unvisited:
-        nearest = min(unvisited, key=lambda atm: time_to(current, atm))
-        route.append(nearest)
-        unvisited.remove(nearest)
-        current = nearest
+        route = [current]
+        while unvisited:
+            nearest = min(unvisited, key=lambda atm: time_to(current, atm))
+            route.append(nearest)
+            unvisited.remove(nearest)
+            current = nearest
 
-    return route
+        return route
