@@ -28,12 +28,13 @@ def load_moscow_graph():
 
     print("Скачиваем карту Москвы... (2-5 минут, только один раз)")
 
-    # Скачиваем граф дорог Москвы по координатам
-    G = ox.graph_from_bbox(
-        bbox=(55.95, 55.55, 37.95, 37.30),
-        network_type="drive",
-        simplify=True
+    # Скачиваем граф дорог Москвы из OpenStreetMap
+    G = ox.graph_from_place(
+        "Moscow, Russia",
+        network_type="drive",  # только дороги для машин
+        simplify=True  # упрощает граф (убирает лишние точки)
     )
+
     # Добавляем скорость движения на дорогах (км/ч)
     G = ox.add_edge_speeds(G)
 
