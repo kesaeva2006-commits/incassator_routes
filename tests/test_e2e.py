@@ -77,3 +77,5 @@ def test_e2e_get_routes_returns_200(client):
         response = client.get('/routes?day=1')
     assert response.status_code == 200
     assert isinstance(response.get_json(), list)
+
+
