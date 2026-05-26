@@ -62,10 +62,10 @@ def build_one_day(atms, day):
         atm.current_in = 0
         atm.current_out = atm.capacity_out
         atm.update_levels(hours_passed)
-    
+
     # 2. Кластеризуем
     clusters = cluster_atms(atms, n_clusters=N_CARS)
-    
+
     # 3. Строим маршруты
     routes = []
     critical_counts = []
@@ -76,15 +76,15 @@ def build_one_day(atms, day):
         else:
             sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
-        
+
         # ПОСЛЕ ОБЪЕЗДА — сбрасываем бункеры посещённых банкоматов
         for atm in route:
             atm.current_in = 0                  # бункер приёма опустошён
             atm.current_out = atm.capacity_out  # бункер выдачи пополнен
-        
+
         routes.append(route)
         critical_counts.append(len(route))
-    
+
     return routes, critical_counts
 
 
@@ -109,30 +109,24 @@ def main():
         ))
         original_atms[-1].current_in = 0
         original_atms[-1].current_out = original_atms[-1].capacity_out
-
+        
     result = []
+    atms_copy = []
+    for atm in original_atms:
+        a = Atm(
+            atm_id=atm.id, lat=atm.lat, lon=atm.lon,
+            capacity_in=atm.capacity_in, capacity_out=atm.capacity_out,
+            mean_in=atm.mean_in, std_in=atm.std_in,
+            mean_out=atm.mean_out, std_out=atm.std_out,
+        )
+        a.current_in = 0
+        a.current_out = a.capacity_out
+        atms_copy.append(a)
+
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
-        
-        # Копируем исходное состояние для этого дня
-        atms_copy = []
-        for atm in original_atms:
-            atms_copy.append(Atm(
-                atm_id=atm.id,
-                lat=atm.lat,
-                lon=atm.lon,
-                capacity_in=atm.capacity_in,
-                capacity_out=atm.capacity_out,
-                mean_in=atm.mean_in,
-                std_in=atm.std_in,
-                mean_out=atm.mean_out,
-                std_out=atm.std_out,
-            ))
-            atms_copy[-1].current_in = 0
-            atms_copy[-1].current_out = atms_copy[-1].capacity_out
-        
         day_routes, day_critical_counts = build_one_day(atms_copy, day)
-        
+
         for car_index, (route, critical_count) in enumerate(zip(day_routes, day_critical_counts), start=1):
             stops = [[atm.lat, atm.lon] for atm in route]
             result.append({
