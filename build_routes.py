@@ -55,13 +55,7 @@ def get_priority(atm):
         return 1
     return 2
 
-
 def build_one_day(atms, day):
-    """
-    Строит маршруты для конкретного дня.
-    Обновляет уровни банкоматов до этого дня, затем кластеризует, сортирует по приоритету
-    и строит маршруты.
-    """
     # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
     for atm in atms:
@@ -69,22 +63,27 @@ def build_one_day(atms, day):
         atm.current_out = atm.capacity_out
         atm.update_levels(hours_passed)
     
-    # 2. Кластеризуем (делим на 5 групп по географической близости)
+    # 2. Кластеризуем
     clusters = cluster_atms(atms, n_clusters=N_CARS)
     
-    # 3. Для каждого кластера строим маршрут с учётом приоритетов
+    # 3. Строим маршруты
     routes = []
     critical_counts = []
     for cluster in clusters:
-        # оставляем только критические (RED и YELLOW), зелёные пропускаем
         urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
         if len(urgent) < 2:
             route = list(urgent)
         else:
-            sorted_urgent = sorted(urgent, key=get_priority)  # красные раньше жёлтых
+            sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
+        
+        # ПОСЛЕ ОБЪЕЗДА — сбрасываем бункеры посещённых банкоматов
+        for atm in route:
+            atm.current_in = 0                  # бункер приёма опустошён
+            atm.current_out = atm.capacity_out  # бункер выдачи пополнен
+        
         routes.append(route)
-        critical_counts.append(len(route))  # все в маршруте критические
+        critical_counts.append(len(route))
     
     return routes, critical_counts
 
