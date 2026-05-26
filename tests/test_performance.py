@@ -50,3 +50,4 @@ def test_full_pipeline_1000_atms_under_30_seconds():
     assert sum(len(r) for r in routes) == 1000
     assert elapsed < 30, f"Пайплайн занял {elapsed:.2f}с — превышен лимит 30 секунд!"
     print(f"\n Пайплайн 1000 банкоматов выполнен за {elapsed:.2f}с")
+
