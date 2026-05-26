@@ -77,16 +77,14 @@ def build_one_day(atms, day):
     routes = []
     critical_counts = []
     for cluster in clusters:
-        if len(cluster) < 2:
-            route = list(cluster)
-        else:
-            # Сортируем банкоматы в кластере по приоритету (сначала красные, потом жёлтые, потом зелёные)
-            sorted_cluster = sorted(cluster, key=get_priority)
-            route = nearest_neighbor_route(sorted_cluster, use_graph=False)
-        routes.append(route)
-        # Подсчитываем количество критических банкоматов (RED или YELLOW)
-        critical = sum(1 for atm in route if atm.get_risk_level() in ('RED', 'YELLOW'))
-        critical_counts.append(critical)
+    urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
+    if len(urgent) < 2:
+        route = list(urgent)
+    else:
+        sorted_urgent = sorted(urgent, key=get_priority)
+        route = nearest_neighbor_route(sorted_urgent, use_graph=False)
+    routes.append(route)
+    critical_counts.append(len(route))
     
     return routes, critical_counts
 
