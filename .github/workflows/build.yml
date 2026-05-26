@@ -39,6 +39,13 @@ jobs:
           path: moscow_graph.pkl
           key: moscow-graph-v1
 
+      - name: Download graph from repo if not cached
+        run: |
+          if [ ! -f moscow_graph.pkl ]; then
+            curl -L -o moscow_graph.pkl \
+            "https://raw.githubusercontent.com/kesaeva2006-commits/incassator_routes/develop/moscow_graph.pkl"
+          fi
+
       # 4.1 Новый шаг — генерируем банкоматы со статистикой
       - name: Generate atms.json with statistics
         run: python generate_atms_json.py
