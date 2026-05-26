@@ -2,6 +2,7 @@ import json
 from flask import Flask, jsonify, render_template, request
 from data_loader import load_atms
 from db_connection import get_connection
+from atm import Atm
 
 app = Flask(__name__)
 
@@ -92,36 +93,34 @@ def update_atms():
 def api_route():
     day = request.args.get('day', 1, type=int)
     group_id = request.args.get('group_id', type=int)
-    conn = None
-    try:
-        conn = get_connection()
-        cur = conn.cursor()
-        if group_id:
-            cur.execute(
-                "SELECT * FROM routes WHERE day = %s AND group_id = %s ORDER BY group_id;",
-                (day, group_id)
-            )
-        else:
-            cur.execute(
-                "SELECT * FROM routes WHERE day = %s ORDER BY group_id;",
-                (day,)
-            )
-        rows = cur.fetchall()
-        routes_list = []
-        for row in rows:
-            routes_list.append({
-                "id": row[0],
-                "day": row[1],
-                "group_id": row[2],
-                "stops": row[3],
-                "total_time": row[4]
-            })
-        return jsonify(routes_list)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if conn:
-            conn.close()
+    atms_dicts = load_atms()
+    atms = []
+    for d in atms_dicts:
+        atm = Atm(
+            atm_id=d['id'],
+            lat=d['lat'],
+            lon=d['lon'],
+            capacity_in=d['capacity_in'],
+            capacity_out=d['capacity_out'],
+            mean_in=d['mean_in'],
+            std_in=d['std_in'],
+            mean_out=d['mean_out'],
+            std_out=d['std_out']
+        )
+        atms.append(atm)
+
+    from greedy_algorithm import nearest_neighbor_route
+    route = nearest_neighbor_route(atms, use_graph=False)
+    stops = [[atm.lat, atm.lon] for atm in route]
+    
+    result = {
+        "day": day,
+        "stops": stops,
+        "car": group_id if group_id else 1,
+        "total_atms": len(stops)
+    }
+
+    return jsonify(result)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
