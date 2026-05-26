@@ -262,3 +262,10 @@ def test_is_critical_yellow_warning():
     is_crit, reason = atm.is_critical(24)
     assert is_crit == True
     assert reason == "YELLOW"
+
+def test_repr_returns_string():
+    atm = Atm(1, 55.75, 37.62, 100, 200)
+    result = repr(atm)
+    assert isinstance(result, str)
+    assert "Atm" in result
+    assert "1" in result
