@@ -65,5 +65,63 @@ def get_routes():
         if conn:
             conn.close()
 
+@app.route('/atms/update', methods=['POST'])
+def update_atms():
+    data = request.get_json()
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        for atm_data in data:
+            cur.execute(
+                """UPDATE atms
+                   SET current_in_level = %s, current_out_level = %s
+                   WHERE id = %s""",
+                (atm_data['current_in_level'], atm_data['current_out_level'], atm_data['id'])
+            )
+        conn.commit()
+        cur.close()
+        return jsonify({"status": "ok"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+@app.route('/api/route', methods=['GET'])
+def api_route():
+    day = request.args.get('day', 1, type=int)
+    group_id = request.args.get('group_id', type=int)
+    conn = None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        if group_id:
+            cur.execute(
+                "SELECT * FROM routes WHERE day = %s AND group_id = %s ORDER BY group_id;",
+                (day, group_id)
+            )
+        else:
+            cur.execute(
+                "SELECT * FROM routes WHERE day = %s ORDER BY group_id;",
+                (day,)
+            )
+        rows = cur.fetchall()
+        routes_list = []
+        for row in rows:
+            routes_list.append({
+                "id": row[0],
+                "day": row[1],
+                "group_id": row[2],
+                "stops": row[3],
+                "total_time": row[4]
+            })
+        return jsonify(routes_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            conn.close()
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
