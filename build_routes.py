@@ -75,7 +75,7 @@ def build_one_day(atms, day):
             route = list(urgent)
         else:
             sorted_urgent = sorted(urgent, key=get_priority)
-            route = nearest_neighbor_route(sorted_urgent, use_graph=True)
+            route = nearest_neighbor_route(sorted_urgent, use_graph=False)
 
         # ПОСЛЕ ОБЪЕЗДА — сбрасываем бункеры посещённых банкоматов
         for atm in route:
