@@ -60,8 +60,7 @@ def load_atms():
             })
         return atms_list
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        print(f"Error: {e}")
         return []
     finally:
         if conn:
