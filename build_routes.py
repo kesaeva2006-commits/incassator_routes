@@ -7,10 +7,11 @@ build_routes.py — сборщик маршрутов для автоматич�
 
     [{"day": 1, "car": 1, "stops": [[lat, lon], ...], "critical_count": 5}, ...]
 
-Маршруты строятся функцией алгоритмиста nearest_neighbor_route в ТОЧНОМ режиме
-(use_graph=True): время между банкоматами считается по реальной дорожной сети
-Москвы (OSMnx) через матрицу времён. Объезжаются только критические банкоматы
-(RED и YELLOW), зелёные пропускаются.
+Маршруты строятся функцией алгоритмиста nearest_neighbor_route в БЫСТРОМ режиме
+(use_graph=False): время между банкоматами оценивается по географическому
+расстоянию (route_utils.calculate_travel_time), без скачивания графа дорог
+OSMnx. Это позволяет собирать маршруты за секунды в чистом окружении GitHub
+Actions. Точный режим по реальным дорогам (use_graph=True) доступен локально.
 
 Запускается автоматически в GitHub Actions — локально запускать не нужно.
 """
@@ -55,18 +56,24 @@ def get_priority(atm):
         return 1
     return 2
 
+
 def build_one_day(atms, day):
+    """
+    Строит маршруты для конкретного дня.
+    Обновляет уровни банкоматов до этого дня, затем кластеризует, сортирует по приоритету
+    и строит маршруты.
+    """
     # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
     for atm in atms:
         atm.current_in = 0
         atm.current_out = atm.capacity_out
         atm.update_levels(hours_passed)
-
-    # 2. Кластеризуем
+    
+    # 2. Кластеризуем (делим на 5 групп по географической близости)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
-
-    # 3. Строим маршруты
+    
+    # 3. Для каждого кластера строим маршрут с учётом приоритетов
     routes = []
     critical_counts = []
     for cluster in clusters:
@@ -76,15 +83,9 @@ def build_one_day(atms, day):
         else:
             sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=False)
-
-        # ПОСЛЕ ОБЪЕЗДА — сбрасываем бункеры посещённых банкоматов
-        for atm in route:
-            atm.current_in = 0                  # бункер приёма опустошён
-            atm.current_out = atm.capacity_out  # бункер выдачи пополнен
-
         routes.append(route)
         critical_counts.append(len(route))
-
+    
     return routes, critical_counts
 
 
@@ -109,24 +110,30 @@ def main():
         ))
         original_atms[-1].current_in = 0
         original_atms[-1].current_out = original_atms[-1].capacity_out
-        
-    result = []
-    atms_copy = []
-    for atm in original_atms:
-        a = Atm(
-            atm_id=atm.id, lat=atm.lat, lon=atm.lon,
-            capacity_in=atm.capacity_in, capacity_out=atm.capacity_out,
-            mean_in=atm.mean_in, std_in=atm.std_in,
-            mean_out=atm.mean_out, std_out=atm.std_out,
-        )
-        a.current_in = 0
-        a.current_out = a.capacity_out
-        atms_copy.append(a)
 
+    result = []
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
+        
+        # Копируем исходное состояние для этого дня
+        atms_copy = []
+        for atm in original_atms:
+            atms_copy.append(Atm(
+                atm_id=atm.id,
+                lat=atm.lat,
+                lon=atm.lon,
+                capacity_in=atm.capacity_in,
+                capacity_out=atm.capacity_out,
+                mean_in=atm.mean_in,
+                std_in=atm.std_in,
+                mean_out=atm.mean_out,
+                std_out=atm.std_out,
+            ))
+            atms_copy[-1].current_in = 0
+            atms_copy[-1].current_out = atms_copy[-1].capacity_out
+        
         day_routes, day_critical_counts = build_one_day(atms_copy, day)
-
+        
         for car_index, (route, critical_count) in enumerate(zip(day_routes, day_critical_counts), start=1):
             stops = [[atm.lat, atm.lon] for atm in route]
             result.append({
