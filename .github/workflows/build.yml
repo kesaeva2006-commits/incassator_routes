@@ -17,6 +17,8 @@ jobs:
     steps:
       # 1. Скачиваем код репозитория
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       # 2. Ставим Python (та же версия, что в тестах)
       - name: Set up Python
