@@ -53,3 +53,41 @@ def test_nearest_neighbor_route_single_atm():
     route = nearest_neighbor_route(atms, use_graph=False)
     assert len(route) == 1
     assert route[0] == atms[0]
+
+from unittest.mock import patch
+import networkx as nx
+
+def make_fake_graph_and_mapping(atms):
+    """Создаёт простой граф-заглушку для тестов"""
+    G = nx.complete_graph(len(atms), create_using=nx.DiGraph())
+    for u, v in G.edges():
+        G[u][v]['travel_time'] = 60
+    atm_to_node = {atm.id: i for i, atm in enumerate(atms)}
+    return G, atm_to_node
+
+@patch('greedy_algorithm.match_atms_to_nodes')
+@patch('greedy_algorithm.load_moscow_graph')
+def test_nearest_neighbor_route_with_graph_returns_all(mock_graph, mock_match):
+    """use_graph=True работает корректно с mock-графом"""
+    atms = generate_atms(5)
+    G, atm_to_node = make_fake_graph_and_mapping(atms)
+    mock_graph.return_value = G          # вместо реального графа — наш фейк
+    mock_match.return_value = atm_to_node
+
+    route = nearest_neighbor_route(atms, use_graph=True)
+
+    assert len(route) == len(atms)
+    assert set(route) == set(atms)
+
+@patch('greedy_algorithm.match_atms_to_nodes')
+@patch('greedy_algorithm.load_moscow_graph')
+def test_nearest_neighbor_route_with_graph_no_duplicates(mock_graph, mock_match):
+    """use_graph=True не дублирует банкоматы"""
+    atms = generate_atms(5)
+    G, atm_to_node = make_fake_graph_and_mapping(atms)
+    mock_graph.return_value = G
+    mock_match.return_value = atm_to_node
+
+    route = nearest_neighbor_route(atms, use_graph=True)
+
+    assert len(set(route)) == len(route)
