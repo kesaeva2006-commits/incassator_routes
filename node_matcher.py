@@ -1,5 +1,6 @@
 import osmnx as ox
 from atm import Atm
+from map_loader import load_moscow_graph
 
 
 def match_atms_to_nodes(atms: list[Atm]) -> dict[int, int]:
