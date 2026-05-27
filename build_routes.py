@@ -87,7 +87,7 @@ def build_one_day(atms, day):
     for cluster in clusters:
         # Оставляем только RED и YELLOW по текущему состоянию (hours_ahead=0)
         # Зелёные не переполнятся сегодня — их не объезжаем
-        urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=0) in ('RED', 'YELLOW')]
+        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
 
         if len(urgent) < 2:
             # Если 0 или 1 банкомат — маршрут тривиальный
