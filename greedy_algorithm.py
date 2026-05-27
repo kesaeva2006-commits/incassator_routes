@@ -10,7 +10,7 @@ def travel_time_between(a: Atm, b: Atm, G, atm_to_node: dict) -> float:
     node_a = atm_to_node[a.id]
     node_b = atm_to_node[b.id]
     try:
-        return nx.shortest_path_length(G, node_a, node_b, weight='travel_time')
+        return nx.shortest_path_length(G, node_a, node_b, weight='travel_time') / 60
     except nx.NetworkXNoPath:
         return float('inf')
 
@@ -27,7 +27,7 @@ def build_time_matrix(atms, G, atm_to_node):
         lengths = nx.single_source_dijkstra_path_length(G, source, weight='travel_time')
         for other in atms:
             dest = atm_to_node[other.id]
-            matrix[(atm.id, other.id)] = lengths.get(dest, float('inf'))
+            matrix[(atm.id, other.id)] = lengths.get(dest, float('inf')) / 60
     return matrix
 
 
