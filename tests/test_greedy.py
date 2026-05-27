@@ -124,4 +124,3 @@ def test_travel_time_between_no_path():
     G.add_node(1)
     atm_to_node = {atms[0].id: 0, atms[1].id: 1}
     assert travel_time_between(atms[0], atms[1], G, atm_to_node) == float('inf')
-
