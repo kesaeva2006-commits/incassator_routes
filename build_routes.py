@@ -112,8 +112,8 @@ def main():
             std_out=atm.std_out,
         ))
         # Начинаем с частично заполненных (банкоматы уже поработали)
-        atms_copy[-1].current_in = int(atms_copy[-1].capacity_in * 0.5)
-        atms_copy[-1].current_out = int(atms_copy[-1].capacity_out * 0.5)
+        original_atms[-1].current_in = int(original_atms[-1].capacity_in * 0.5)
+        original_atms[-1].current_out = int(original_atms[-1].capacity_out * 0.5)
 
     result = []
     for day in range(1, DAYS + 1):
