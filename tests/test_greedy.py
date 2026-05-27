@@ -65,3 +65,70 @@ def make_fake_graph_and_mapping(atms):
     atm_to_node = {atm.id: i for i, atm in enumerate(atms)}
     return G, atm_to_node
 
+def make_atms(n):
+    return [Atm(atm_id=i, lat=55.7 + i*0.01, lon=37.6 + i*0.01,
+                capacity_in=10000, capacity_out=10000) for i in range(n)]
+
+def test_build_time_matrix_returns_dict():
+    from greedy_algorithm import build_time_matrix
+    atms = make_atms(3)
+    G = nx.complete_graph(3, create_using=nx.DiGraph())
+    for u, v in G.edges():
+        G[u][v]['travel_time'] = 60
+    atm_to_node = {atm.id: i for i, atm in enumerate(atms)}
+    matrix = build_time_matrix(atms, G, atm_to_node)
+    assert isinstance(matrix, dict)
+
+def test_build_time_matrix_self_distance_is_zero():
+    from greedy_algorithm import build_time_matrix
+    atms = make_atms(3)
+    G = nx.complete_graph(3, create_using=nx.DiGraph())
+    for u, v in G.edges():
+        G[u][v]['travel_time'] = 60
+    atm_to_node = {atm.id: i for i, atm in enumerate(atms)}
+    matrix = build_time_matrix(atms, G, atm_to_node)
+    for atm in atms:
+        assert matrix[(atm.id, atm.id)] == 0
+
+def test_build_time_matrix_unreachable_is_inf():
+    from greedy_algorithm import build_time_matrix
+    atms = make_atms(2)
+    G = nx.DiGraph()
+    G.add_node(0)
+    G.add_node(1)
+    atm_to_node = {atms[0].id: 0, atms[1].id: 1}
+    matrix = build_time_matrix(atms, G, atm_to_node)
+    assert matrix[(atms[0].id, atms[1].id)] == float('inf')
+
+def test_nearest_neighbor_route_matrix_empty():
+    from greedy_algorithm import nearest_neighbor_route_matrix
+    result = nearest_neighbor_route_matrix([], nx.DiGraph(), {})
+    assert result == []
+
+def test_nearest_neighbor_route_matrix_returns_all():
+    from greedy_algorithm import nearest_neighbor_route_matrix
+    atms = generate_atms(4)
+    G = nx.complete_graph(4, create_using=nx.DiGraph())
+    for u, v in G.edges():
+        G[u][v]['travel_time'] = 60
+    atm_to_node = {atm.id: i for i, atm in enumerate(atms)}
+    route = nearest_neighbor_route_matrix(atms, G, atm_to_node)
+    assert len(route) == len(atms)
+
+def test_travel_time_between_connected():
+    from greedy_algorithm import travel_time_between
+    atms = generate_atms(2)
+    G = nx.DiGraph()
+    G.add_edge(0, 1, travel_time=120)
+    atm_to_node = {atms[0].id: 0, atms[1].id: 1}
+    assert travel_time_between(atms[0], atms[1], G, atm_to_node) == 120
+
+def test_travel_time_between_no_path():
+    from greedy_algorithm import travel_time_between
+    atms = generate_atms(2)
+    G = nx.DiGraph()
+    G.add_node(0)
+    G.add_node(1)
+    atm_to_node = {atms[0].id: 0, atms[1].id: 1}
+    assert travel_time_between(atms[0], atms[1], G, atm_to_node) == float('inf')
+
