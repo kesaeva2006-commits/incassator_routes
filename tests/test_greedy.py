@@ -117,11 +117,12 @@ def test_nearest_neighbor_route_matrix_returns_all():
 
 def test_travel_time_between_connected():
     from greedy_algorithm import travel_time_between
-    atms = generate_atms(2)
+    atm1 = Atm(atm_id=0, lat=55.7, lon=37.6, capacity_in=10000, capacity_out=10000)
+    atm2 = Atm(atm_id=1, lat=55.8, lon=37.7, capacity_in=10000, capacity_out=10000)
     G = nx.DiGraph()
     G.add_edge(0, 1, travel_time=120)
-    atm_to_node = {atms[0].id: 0, atms[1].id: 1}
-    assert travel_time_between(atms[0], atms[1], G, atm_to_node) == 120
+    atm_to_node = {0: 0, 1: 1}
+    assert travel_time_between(atm1, atm2, G, atm_to_node) == 120
 
 def test_travel_time_between_no_path():
     from greedy_algorithm import travel_time_between
