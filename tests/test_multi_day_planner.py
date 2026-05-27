@@ -28,7 +28,6 @@ def make_test_atms(n=10):
     return atms
 
 def make_fake_graph(atms):
-    """Создаёт граф-заглушку для тестов."""
     n = len(atms)
     G = nx.complete_graph(n, create_using=nx.DiGraph())
     for u, v in G.edges():
@@ -40,16 +39,16 @@ def make_fake_graph(atms):
 def test_plan_multi_day_returns_dict():
     atms = make_test_atms(10)
     G, atm_to_node = make_fake_graph(atms)
-    with patch('greedy_algorithm.load_moscow_graph', return_value=G), \
-         patch('greedy_algorithm.match_atms_to_nodes', return_value=atm_to_node):
+    with patch('map_loader.load_moscow_graph', return_value=G), \
+         patch('node_matcher.match_atms_to_nodes', return_value=atm_to_node):
         plan = plan_multi_day(atms, days=3)
     assert isinstance(plan, dict)
 
 def test_plan_multi_day_has_all_days():
     atms = make_test_atms(10)
     G, atm_to_node = make_fake_graph(atms)
-    with patch('greedy_algorithm.load_moscow_graph', return_value=G), \
-         patch('greedy_algorithm.match_atms_to_nodes', return_value=atm_to_node):
+    with patch('map_loader.load_moscow_graph', return_value=G), \
+         patch('node_matcher.match_atms_to_nodes', return_value=atm_to_node):
         plan = plan_multi_day(atms, days=3)
     assert 1 in plan
     assert 2 in plan
@@ -58,8 +57,8 @@ def test_plan_multi_day_has_all_days():
 def test_plan_multi_day_each_day_has_routes():
     atms = make_test_atms(10)
     G, atm_to_node = make_fake_graph(atms)
-    with patch('greedy_algorithm.load_moscow_graph', return_value=G), \
-         patch('greedy_algorithm.match_atms_to_nodes', return_value=atm_to_node):
+    with patch('map_loader.load_moscow_graph', return_value=G), \
+         patch('node_matcher.match_atms_to_nodes', return_value=atm_to_node):
         plan = plan_multi_day(atms, days=3)
     for day in plan:
         assert "routes" in plan[day]
@@ -71,8 +70,8 @@ def test_plan_multi_day_each_day_has_routes():
 def test_plan_multi_day_single_day():
     atms = make_test_atms(10)
     G, atm_to_node = make_fake_graph(atms)
-    with patch('greedy_algorithm.load_moscow_graph', return_value=G), \
-         patch('greedy_algorithm.match_atms_to_nodes', return_value=atm_to_node):
+    with patch('map_loader.load_moscow_graph', return_value=G), \
+         patch('node_matcher.match_atms_to_nodes', return_value=atm_to_node):
         plan = plan_multi_day(atms, days=1)
     assert len(plan) == 1
     assert 1 in plan
