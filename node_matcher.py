@@ -2,7 +2,7 @@ import osmnx as ox
 from atm import Atm
 
 
-def match_atms_to_nodes(atms: list[Atm], G=None) -> dict[int, int]:
+def match_atms_to_nodes(atms: list[Atm]) -> dict[int, int]:
     """
     Для каждого банкомата находит ближайший узел (перекрёсток) на карте дорог.
 
@@ -18,10 +18,7 @@ def match_atms_to_nodes(atms: list[Atm], G=None) -> dict[int, int]:
     """
 
     # Загружаем граф дорог (из кэша — быстро)
-    if G is None:
-        from map_loader import load_moscow_graph
-        G = load_moscow_graph()
-
+    G = load_moscow_graph()
     # Собираем координаты всех банкоматов в два списка
     # ox.nearest_nodes принимает сразу все точки — это быстрее
     # чем искать по одному в цикле
