@@ -66,8 +66,8 @@ def build_one_day(atms, day):
     # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
     for atm in atms:
-        atm.current_in = 0
-        atm.current_out = atm.capacity_out
+        atm.current_in = int(atm.capacity_in * 0.5)
+        atm.current_out = int(atm.capacity_out * 0.5)
         atm.update_levels(hours_passed)
 
     # 2. Кластеризуем (делим на 5 групп по географической близости)
@@ -111,8 +111,9 @@ def main():
             mean_out=atm.mean_out,
             std_out=atm.std_out,
         ))
-        original_atms[-1].current_in = 0
-        original_atms[-1].current_out = original_atms[-1].capacity_out
+        # Начинаем с частично заполненных (банкоматы уже поработали)
+        atms_copy[-1].current_in = int(atms_copy[-1].capacity_in * 0.5)
+        atms_copy[-1].current_out = int(atms_copy[-1].capacity_out * 0.5)
 
     result = []
     for day in range(1, DAYS + 1):
