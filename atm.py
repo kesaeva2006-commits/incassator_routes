@@ -183,16 +183,23 @@ class Atm: # Класс, описывающий банкомат
 
     def update_levels(self, hours_passed: float):
         """
-        Обновляет текущие уровни бункеров после прошедшего времени.
-        Вызывается в конце каждого дня для пересчёта перед следующим днём.
-
-        :param hours_passed: сколько часов прошло (обычно 24)
+        Обновляет уровни бункеров.
+        ВАЖНО: mean_in/mean_out считаются как СТАТИСТИКА ЗА ДЕНЬ.
+        Поэтому мы просто добавляем их, независимо от hours_passed (если он ~24).
         """
-        import math
-        # Обновляем бункер приёма (люди внесли деньги)
-        total_in = self.mean_in * hours_passed
-        self.current_in = min(self.capacity_in, self.current_in + total_in)
+        import numpy as np
 
-        # Обновляем бункер выдачи (люди сняли деньги)
-        total_out = self.mean_out * hours_passed
-        self.current_out = max(0, self.current_out - total_out)
+        # Если хотим реализма с случайностью, используем нормальное распределение
+        # Если нет — просто берем mean
+        income = int(np.random.normal(self.mean_in, self.std_in))
+        outcome = int(np.random.normal(self.mean_out, self.std_out))
+
+        # Обновляем уровни
+        self.current_in += max(0, income)
+        self.current_out -= max(0, outcome)
+
+        # Физические ограничения
+        if self.current_in > self.capacity_in:
+            self.current_in = self.capacity_in
+        if self.current_out < 0:
+            self.current_out = 0
