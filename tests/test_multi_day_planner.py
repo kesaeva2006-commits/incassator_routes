@@ -96,7 +96,7 @@ def test_plan_multi_day_updates_levels():
     
     # Проверяем, что после планирования какие-то банкоматы изменили уровень
     # (можно проверить, что план не пустой)
-    total_serviced = sum(len(route) for routes in result[1]["routes"] for route in routes)
+    total_serviced = sum(len(route) for route in result[1]["routes"])
     assert total_serviced > 0
     
     # Функция не обязана менять исходные объекты, 
