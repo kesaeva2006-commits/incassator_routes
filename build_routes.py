@@ -96,7 +96,7 @@ def build_one_day(atms, day):
             # Сортируем: красные раньше жёлтых
             sorted_urgent = sorted(urgent, key=get_priority)
             # Строим жадный маршрут по географическому расстоянию
-            route = nearest_neighbor_route(sorted_urgent, use_graph=False)
+            route = nearest_neighbor_route(sorted_urgent, use_graph=True)
 
         # 4. После объезда сбрасываем бункеры посещённых банкоматов
         # Инкассаторы опустошили бункер приёма и пополнили бункер выдачи
