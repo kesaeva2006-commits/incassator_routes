@@ -60,8 +60,8 @@ def get_priority(atm):
 def build_one_day(atms, day):
     """
     Строит маршруты для конкретного дня.
-    Обновляет уровни банкоматов до этого дня, затем кластеризует, сортирует по приоритету
-    и строит маршруты.
+    Обновляет уровни банкоматов до этого дня, затем кластеризует,
+    отсеивает зелёные банкоматы и строит маршруты только для критических.
     """
     # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
@@ -69,25 +69,26 @@ def build_one_day(atms, day):
         atm.current_in = 0
         atm.current_out = atm.capacity_out
         atm.update_levels(hours_passed)
-    
+
     # 2. Кластеризуем (делим на 5 групп по географической близости)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
-    
-    # 3. Для каждого кластера строим маршрут с учётом приоритетов
+
+    # 3. Для каждого кластера строим маршрут только из критических банкоматов
     routes = []
     critical_counts = []
     for cluster in clusters:
-        if len(cluster) < 2:
-            route = list(cluster)
+        # Оставляем только критические (RED и YELLOW), зелёные пропускаем
+        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
+        if len(urgent) < 2:
+            route = list(urgent)
         else:
-            # Сортируем банкоматы в кластере по приоритету (сначала красные, потом жёлтые, потом зелёные)
-            sorted_cluster = sorted(cluster, key=get_priority)
-            route = nearest_neighbor_route(sorted_cluster, use_graph=False)
+            # Красные раньше жёлтых
+            sorted_urgent = sorted(urgent, key=get_priority)
+            route = nearest_neighbor_route(sorted_urgent, use_graph=False)
         routes.append(route)
-        # Подсчитываем количество критических банкоматов (RED или YELLOW)
-        critical = sum(1 for atm in route if atm.get_risk_level() in ('RED', 'YELLOW'))
-        critical_counts.append(critical)
-    
+        # Все банкоматы в маршруте критические
+        critical_counts.append(len(route))
+
     return routes, critical_counts
 
 
@@ -116,7 +117,7 @@ def main():
     result = []
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
-        
+
         # Копируем исходное состояние для этого дня
         atms_copy = []
         for atm in original_atms:
@@ -133,9 +134,9 @@ def main():
             ))
             atms_copy[-1].current_in = 0
             atms_copy[-1].current_out = atms_copy[-1].capacity_out
-        
+
         day_routes, day_critical_counts = build_one_day(atms_copy, day)
-        
+
         for car_index, (route, critical_count) in enumerate(zip(day_routes, day_critical_counts), start=1):
             stops = [[atm.lat, atm.lon] for atm in route]
             result.append({
@@ -150,7 +151,8 @@ def main():
 
     print(f"\nГотово. Сохранено в {ROUTES_FILE}: {len(result)} маршрутов")
     for block in result:
-        print(f"  День {block['day']}, машина {block['car']}: {len(block['stops'])} банкоматов, критических: {block.get('critical_count', 0)}")
+        print(f"  День {block['day']}, машина {block['car']}: "
+              f"{len(block['stops'])} банкоматов, критических: {block.get('critical_count', 0)}")
 
 
 if __name__ == '__main__':
