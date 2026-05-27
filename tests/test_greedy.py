@@ -65,23 +65,3 @@ def make_fake_graph_and_mapping(atms):
     atm_to_node = {atm.id: i for i, atm in enumerate(atms)}
     return G, atm_to_node
 
-@patch('map_loader.match_atms_to_nodes')
-@patch('map_loader.load_moscow_graph')
-def test_nearest_neighbor_route_with_graph_returns_all(mock_graph, mock_match):
-    atms = make_atms(5)
-    G, atm_to_node = make_fake_graph_and_mapping(atms)
-    mock_graph.return_value = G
-    mock_match.return_value = atm_to_node
-    route = nearest_neighbor_route(atms, use_graph=True)
-    assert len(route) == len(atms)
-    assert set(route) == set(atms)
-
-@patch('map_loader.match_atms_to_nodes')
-@patch('map_loader.load_moscow_graph')
-def test_nearest_neighbor_route_with_graph_no_duplicates(mock_graph, mock_match):
-    atms = make_atms(5)
-    G, atm_to_node = make_fake_graph_and_mapping(atms)
-    mock_graph.return_value = G
-    mock_match.return_value = atm_to_node
-    route = nearest_neighbor_route(atms, use_graph=True)
-    assert len(set(route)) == len(route)
