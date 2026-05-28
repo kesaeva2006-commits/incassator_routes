@@ -3,6 +3,7 @@ from flask import Flask, jsonify, render_template, request
 from data_loader import load_atms
 from db_connection import get_connection
 from atm import Atm
+from greedy_algorithm import nearest_neighbor_route
 
 app = Flask(__name__)
 
@@ -113,7 +114,6 @@ def api_route():
         )
         atms.append(atm)
 
-    from greedy_algorithm import nearest_neighbor_route
     route = nearest_neighbor_route(atms, use_graph=False)
     stops = [[atm.lat, atm.lon] for atm in route]
     
