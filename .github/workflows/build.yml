@@ -32,12 +32,12 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements-build.txt
 
-      # # 3.1 Кэшируем граф Москвы (временно отключено)
-      # - name: Cache Moscow graph
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: moscow_graph.pkl
-      #     key: moscow-graph-v6
+      # 3.1 Кэшируем граф Москвы
+      - name: Cache Moscow graph
+        uses: actions/cache@v4
+        with:
+          path: moscow_graph.pkl
+          key: moscow-graph-v7
 
       # На всякий случай удаляем повреждённый файл
       - name: Remove corrupted graph cache
