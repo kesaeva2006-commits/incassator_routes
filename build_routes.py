@@ -19,7 +19,7 @@ moscow_graph.pkl на диске. Для запуска в GitHub Actions без
 import json
 from atm import Atm
 from clustering import cluster_atms
-from greedy_algorithm import nearest_neighbor_route
+from greedy_algorithm import nearest_neighbor_route, travel_time_between
 
 DAYS = 3
 N_CARS = 5
@@ -56,6 +56,26 @@ def get_priority(atm):
         return 1
     return 2
 
+def route_total_minutes(route, use_graph=True):
+    """Суммарное время прохождения готового маршрута, в минутах.
+    В графовом режиме берём реальное дорожное время (Дейкстра, секунды)."""
+    if len(route) < 2:
+        return 0.0
+    if use_graph:
+        from map_loader import load_moscow_graph
+        from node_matcher import match_atms_to_nodes
+        G = load_moscow_graph()
+        atm_to_node = match_atms_to_nodes(route)
+        total_sec = 0.0
+        for a, b in zip(route, route[1:]):
+            t = travel_time_between(a, b, G, atm_to_node)
+            if t != float('inf'):
+                total_sec += t
+        return round(total_sec / 60.0, 1)
+    else:
+        from route_utils import calculate_travel_time
+        return round(sum(calculate_travel_time(a, b)
+                         for a, b in zip(route, route[1:])), 1)
 
 def build_one_day(atms, day):
     """
@@ -76,6 +96,7 @@ def build_one_day(atms, day):
     # 3. Для каждого кластера строим маршрут только из критических банкоматов
     routes = []
     critical_counts = []
+    times = []
     for cluster in clusters:
         # Оставляем только критические (RED и YELLOW), зелёные пропускаем
         urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
@@ -86,10 +107,10 @@ def build_one_day(atms, day):
             sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
         routes.append(route)
-        # Все банкоматы в маршруте критические
         critical_counts.append(len(route))
+        times.append(route_total_minutes(route, use_graph=True))
 
-    return routes, critical_counts
+    return routes, critical_counts, times
 
 
 def main():
@@ -135,15 +156,17 @@ def main():
             atms_copy[-1].current_in = 0
             atms_copy[-1].current_out = atms_copy[-1].capacity_out
 
-        day_routes, day_critical_counts = build_one_day(atms_copy, day)
+        day_routes, day_critical_counts, day_times = build_one_day(atms_copy, day)
 
-        for car_index, (route, critical_count) in enumerate(zip(day_routes, day_critical_counts), start=1):
+        for car_index, (route, critical_count, total_time) in enumerate(
+                zip(day_routes, day_critical_counts, day_times), start=1):
             stops = [[atm.lat, atm.lon] for atm in route]
             result.append({
                 'day': day,
                 'car': car_index,
                 'stops': stops,
-                'critical_count': critical_count
+                'critical_count': critical_count,
+                'total_time': total_time   # минуты, посчитано по дорогам
             })
 
     with open(ROUTES_FILE, 'w', encoding='utf-8') as f:
