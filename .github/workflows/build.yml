@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: moscow_graph.pkl
-          key: moscow-graph-v2
+          key: moscow-graph-v3
 
       - name: Download graph from repo if not cached
         run: |
