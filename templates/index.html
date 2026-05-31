@@ -447,7 +447,7 @@
              justify-content:center; align-items:center;">
           <div style="background:#fff; border-radius:20px; padding:30px 34px;
                max-width:420px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
-            <div class="result-title">Статистика — день <span id="statsDay">1</span></div>
+            <div class="result-title">Статистика - день <span id="statsDay">1</span></div>
             <div id="statsBody"></div>
             <button class="day-btn active" style="margin-top:18px;"
                onclick="document.getElementById('statsOverlay').style.display='none'">Закрыть</button>
@@ -489,14 +489,14 @@
 
                 html += `<div class="result-item">
                     <span class="result-icon">🚗</span>
-                    <span><strong>Машина ${route.car}</strong> — ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
+                    <span><strong>Машина ${route.car}</strong> - ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
                 </div>`;
             });
             
             // Добавляем блок с критическими банкоматами
             html += `<div class="critical-alert">
                         <span class="critical-dot"></span>
-                        Критических банкоматов: ${totalCritical} - требуется срочный объезд
+                        Критических банкоматов: ${totalCritical} (при наличии требуется срочный объезд)
                     </div>`;
             
             resultBox.innerHTML = html;
