@@ -71,7 +71,10 @@ def route_total_minutes(route, use_graph=True):
             t = travel_time_between(a, b, G, atm_to_node)
             if t != float('inf'):
                 total_sec += t
-        return round(total_sec / 60.0, 1)
+        travel_min = total_sec / 60.0
+        from route_utils import check_workday_limit
+        _, total = check_workday_limit(route, travel_time=travel_min)
+        return round(total, 1)
     else:
         from route_utils import calculate_travel_time
         return round(sum(calculate_travel_time(a, b)
