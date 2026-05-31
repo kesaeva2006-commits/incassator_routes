@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Инкассаторские маршруты - Москва</title>
     
+    <!-- Значок сайта (favicon) с машинкой -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🚗</text></svg>">
+    
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     
 <style>
@@ -20,9 +23,11 @@
         /* Более глубокий, сложный градиент: от глубокого синего к воздушному серо-голубому */
         background: linear-gradient(165deg, #0b4566 0%, #154f6c 30%, #2e8ab8 70%, #a3c9db 100%);
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
         padding: 20px;
+        gap: 30px;
+        transition: background-position 0.3s ease;
     }
 
     /* Декоративные круги */
@@ -48,6 +53,35 @@
         background: radial-gradient(circle, rgba(46, 138, 184, 0.1) 0%, transparent 70%);
         border-radius: 50%;
         pointer-events: none;
+    }
+
+    /* Частицы-машинки на фоне */
+    .particles-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .particle-car {
+        position: absolute;
+        font-size: 24px;
+        opacity: 0.12;
+        animation: driveCar linear infinite;
+        filter: blur(0.5px);
+    }
+
+    @keyframes driveCar {
+        0% {
+            transform: translateX(-100px);
+        }
+        100% {
+            transform: translateX(calc(100vw + 100px));
+        }
     }
 
     /* Основной контейнер */
@@ -104,6 +138,8 @@
         letter-spacing: 1.5px;
         margin-bottom: 8px;
         line-height: 1.15;
+        text-shadow: 0 0 20px rgba(74, 158, 181, 0.3),
+                     0 0 40px rgba(74, 158, 181, 0.1);
     }
 
     /* Разделитель */
@@ -168,7 +204,8 @@
         background: linear-gradient(135deg, #2c3e50 0%, #1a2d3b 100%);
         box-shadow: 0 15px 30px -6px rgba(20, 40, 55, 0.5);
         transform: translateY(-3px);
-        letter-spacing: 3.5px;
+        letter-spacing: 3px;
+        transition: all 0.3s ease;
     }
 
     .build-button:active {
@@ -394,10 +431,224 @@
         text-transform: uppercase;
         opacity: 0.9;
     }
+
+    /* ========== БЛОК 2: МИНИ-ИГРА (ПРЫЖКИ) ========== */
+    .game-block {
+        background: rgba(255, 255, 255, 0.96);
+        border-radius: 32px;
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.25),
+            0 0 0 1px rgba(255, 255, 255, 0.6);
+        padding: 30px 35px;
+        max-width: 680px;
+        width: 100%;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(12px);
+    }
+
+    .game-block-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #0a3d52;
+        margin-bottom: 15px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .game-container {
+        position: relative;
+        width: 100%;
+        height: 100px;
+        background: linear-gradient(180deg, #f0f7fa 0%, #e8f0f4 100%);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #d0e0e8;
+    }
+
+    .game-road {
+        position: absolute;
+        bottom: 30px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: repeating-linear-gradient(90deg, #8aaebb 0px, #8aaebb 20px, transparent 20px, transparent 40px);
+    }
+
+    .game-road.moving {
+        animation: roadMove 0.6s linear infinite;
+    }
+
+    @keyframes roadMove {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(40px); }
+    }
+
+    .game-car-jump {
+        position: absolute;
+        bottom: 35px;
+        right: 50px;
+        font-size: 36px;
+        transition: bottom 0.15s ease-out;
+        z-index: 10;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+        transform: scaleX(1);
+    }
+
+    .game-car-jump.jumping {
+        bottom: 75px;
+        transition: bottom 0.15s ease-in;
+    }
+
+    .game-obstacle {
+        position: absolute;
+        bottom: 38px;
+        left: -40px;
+        font-size: 30px;
+        z-index: 5;
+    }
+
+    .game-obstacle.moving {
+        animation: obstacleMove 2.2s linear infinite;
+    }
+
+    @keyframes obstacleMove {
+        0% { left: -40px; }
+        100% { left: calc(100% + 40px); }
+    }
+
+    .game-score {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #1f779e;
+        z-index: 10;
+        background: rgba(255,255,255,0.9);
+        padding: 4px 10px;
+        border-radius: 10px;
+    }
+
+    .game-over {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #cc6b4d;
+        z-index: 20;
+        background: rgba(255,255,255,0.95);
+        padding: 8px 18px;
+        border-radius: 12px;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .game-controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .game-btn {
+        background: #ffffff;
+        border: 1.5px solid #cfe3ec;
+        color: #1f779e;
+        padding: 8px 22px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .game-btn:hover {
+        background: #1f779e;
+        color: #ffffff;
+        border-color: #1f779e;
+    }
+
+    .game-btn.playing {
+        background: #cc6b4d;
+        color: #ffffff;
+        border-color: #cc6b4d;
+    }
+
+    .game-hint {
+        font-size: 10px;
+        color: #8aaebb;
+        margin-top: 10px;
+        letter-spacing: 1px;
+    }
+
+    /* ========== БЛОК 3: ЗМЕЙКА ========== */
+    .snake-container {
+        position: relative;
+        width: 100%;
+        height: 400px;
+        background: linear-gradient(180deg, #0a2f3f 0%, #0d3d52 100%);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid #1a4d63;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .snake-canvas {
+        display: block;
+        border-radius: 8px;
+    }
+
+    .snake-score {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        color: #6bc0d4;
+        margin-bottom: 10px;
+        letter-spacing: 1px;
+    }
+
+    .snake-overlay {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #ffffff;
+        z-index: 20;
+        background: rgba(0,0,0,0.8);
+        padding: 15px 25px;
+        border-radius: 12px;
+        text-align: center;
+        white-space: nowrap;
+    }
 </style>
 </head>
 <body>
 
+    <!-- Анимированные машинки на фоне -->
+    <div class="particles-container" id="particlesContainer"></div>
+
+    <!-- ========== БЛОК 1: ОСНОВНОЙ ========== -->
     <div class="main-container">
         <div class="accent-line"></div>
         <div class="icon">🚚</div>
@@ -433,7 +684,7 @@
                 <span class="critical-dot"></span>
                 Критических банкоматов: 3 - требуется срочный объезд
             </div>
-</div>
+        </div>
         
         <div class="day-tabs" id="dayTabs">
             <button class="day-btn active" data-day="1">День 1</button>
@@ -461,7 +712,459 @@
         <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
     </div>
 
+    <!-- ========== БЛОК 2: МИНИ-ИГРА (ПРЫЖКИ) ========== -->
+    <div class="game-block">
+        <div class="game-block-title">а динозаврик придёт?</div>
+        <div class="snake-score">🏧 Перепрыгнуто <span id="gameScore">0</span></div>
+        <div class="game-container" id="gameContainer">
+            <div class="game-road" id="gameRoad"></div>
+            <div class="game-car-jump" id="gameCar">🚚</div>
+            <div class="game-obstacle" id="gameObstacle">🏧</div>
+            <div class="game-over" id="gameOver">💥 Ты банкомат сломал...</div>
+        </div>
+        <div class="game-controls">
+            <button class="game-btn" id="btnJumpGame">▶ Играть</button>
+        </div>
+        <div class="game-hint">Пробел или клик по полю - прыжок</div>
+    </div>
+
+    <!-- ========== БЛОК 3: ЗМЕЙКА ========== -->
+    <div class="game-block">
+        <div class="game-block-title">змейка уже не та</div>
+        <div class="snake-score">🏧 Собрано <span id="snakeScore">0</span></div>
+        <div class="snake-container" id="snakeContainer">
+            <canvas class="snake-canvas" id="snakeCanvas" width="580" height="380"></canvas>
+            <div class="snake-overlay" id="snakeOverlay">В следующий раз больше собери, ладно?<br>Сейчас собрано <span id="snakeFinalScore">0</span></div>
+        </div>
+        <div class="game-controls">
+            <button class="game-btn" id="btnSnakeGame">▶ Играть</button>
+        </div>
+        <div class="game-hint">Стрелки ← → ↑ ↓ для управления машиной</div>
+    </div>
+
 <script>
+    // Создание плавающих машинок на фоне
+    function createParticles() {
+        const container = document.getElementById('particlesContainer');
+        const emojis = ['🚗', '🚙', '🚐', '🚛', '🚎'];
+        
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('span');
+            particle.className = 'particle-car';
+            particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            particle.style.top = (Math.random() * 80 + 10) + '%';
+            particle.style.animationDuration = (Math.random() * 20 + 15) + 's';
+            particle.style.animationDelay = (Math.random() * 15) + 's';
+            
+            // Некоторые едут справа налево
+            if (Math.random() > 0.5) {
+                particle.style.animationName = 'driveCarReverse';
+                particle.style.left = 'auto';
+                particle.style.right = '-100px';
+            }
+            
+            container.appendChild(particle);
+        }
+        
+        // Добавляем обратную анимацию
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes driveCarReverse {
+                0% { transform: translateX(100px); }
+                100% { transform: translateX(calc(-100vw - 100px)); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    createParticles();
+
+    // Параллакс-эффект для фона
+    document.addEventListener('mousemove', (e) => {
+        const moveX = (e.clientX - window.innerWidth / 2) * 0.005;
+        const moveY = (e.clientY - window.innerHeight / 2) * 0.005;
+        
+        document.body.style.backgroundPosition = `${50 + moveX}% ${50 + moveY}%`;
+    });
+
+    // ========== МИНИ-ИГРА 1: ПРЫЖКИ ==========
+    (function() {
+        const car = document.getElementById('gameCar');
+        const obstacle = document.getElementById('gameObstacle');
+        const road = document.getElementById('gameRoad');
+        const scoreElement = document.getElementById('gameScore');
+        const gameOverElement = document.getElementById('gameOver');
+        const gameContainer = document.getElementById('gameContainer');
+        const btnPlay = document.getElementById('btnJumpGame');
+        
+        let jumpedCount = 0;
+        let isJumping = false;
+        let isGameOver = false;
+        let isPlaying = false;
+        let collisionCheckInterval;
+        let obstaclePassed = false;
+        
+        function jump() {
+            if (isJumping || isGameOver || !isPlaying) return;
+            
+            isJumping = true;
+            obstaclePassed = false;
+            car.classList.add('jumping');
+            
+            setTimeout(() => {
+                car.classList.remove('jumping');
+                isJumping = false;
+            }, 450);
+        }
+        
+        function checkCollision() {
+            if (isGameOver || !isPlaying) return;
+            
+            const carRect = car.getBoundingClientRect();
+            const obstacleRect = obstacle.getBoundingClientRect();
+            
+            // Проверяем, перепрыгнули ли банкомат
+            if (!obstaclePassed && obstacleRect.left > carRect.right) {
+                obstaclePassed = true;
+                jumpedCount++;
+                scoreElement.textContent = jumpedCount;
+                
+                scoreElement.style.transform = 'scale(1.2)';
+                setTimeout(() => scoreElement.style.transform = 'scale(1)', 150);
+            }
+            
+            // Проверка столкновения
+            const margin = 12;
+            const carBottom = carRect.bottom - margin;
+            const obstacleTop = obstacleRect.top + margin;
+            
+            if (
+                obstacleRect.right - margin > carRect.left + margin &&
+                obstacleRect.left + margin < carRect.right - margin &&
+                carBottom > obstacleTop
+            ) {
+                endGame();
+            }
+        }
+        
+        function endGame() {
+            isGameOver = true;
+            gameOverElement.style.display = 'block';
+            obstacle.classList.remove('moving');
+            road.classList.remove('moving');
+            clearInterval(collisionCheckInterval);
+            btnPlay.textContent = '▶ Играть';
+            btnPlay.classList.remove('playing');
+            isPlaying = false;
+        }
+        
+        function startGame() {
+            jumpedCount = 0;
+            isGameOver = false;
+            isJumping = false;
+            obstaclePassed = false;
+            car.classList.remove('jumping');
+            gameOverElement.style.display = 'none';
+            scoreElement.textContent = '0';
+            isPlaying = true;
+            btnPlay.textContent = '⏹ Стоп';
+            btnPlay.classList.add('playing');
+            
+            obstacle.classList.add('moving');
+            road.classList.add('moving');
+            
+            collisionCheckInterval = setInterval(checkCollision, 20);
+        }
+        
+        function toggleGame() {
+            if (isPlaying) {
+                endGame();
+            } else {
+                startGame();
+            }
+        }
+        
+        btnPlay.addEventListener('click', toggleGame);
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && isPlaying) {
+                e.preventDefault();
+                if (isGameOver) {
+                    startGame();
+                } else {
+                    jump();
+                }
+            }
+        });
+        
+        gameContainer.addEventListener('click', (e) => {
+            if (isPlaying) {
+                if (isGameOver) {
+                    startGame();
+                } else {
+                    jump();
+                }
+            }
+        });
+    })();
+
+    // ========== МИНИ-ИГРА 2: ЗМЕЙКА ==========
+    (function() {
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('snakeScore');
+        const finalScoreElement = document.getElementById('snakeFinalScore');
+        const overlay = document.getElementById('snakeOverlay');
+        const btnPlay = document.getElementById('btnSnakeGame');
+        const container = document.getElementById('snakeContainer');
+        
+        // Подгоняем canvas под размер контейнера
+        function resizeCanvas() {
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width - 4;
+            canvas.height = rect.height - 4;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const gridSize = 20;
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let score = 0;
+        let gameLoop;
+        let isPlaying = false;
+        let speed = 120;
+        
+        function init() {
+            const cols = Math.floor(canvas.width / gridSize);
+            const rows = Math.floor(canvas.height / gridSize);
+            const startX = Math.floor(cols / 2);
+            const startY = Math.floor(rows / 2);
+            
+            snake = [
+                {x: startX, y: startY},
+                {x: startX - 1, y: startY},
+                {x: startX - 2, y: startY}
+            ];
+            
+            direction = 'right';
+            nextDirection = 'right';
+            score = 0;
+            scoreElement.textContent = '0';
+	    speed = 200;
+            spawnFood();
+        }
+        
+        function spawnFood() {
+            const cols = Math.floor(canvas.width / gridSize);
+            const rows = Math.floor(canvas.height / gridSize);
+            
+            do {
+                food = {
+                    x: Math.floor(Math.random() * cols),
+                    y: Math.floor(Math.random() * rows)
+                };
+            } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
+        }
+        
+        function update() {
+            direction = nextDirection;
+            
+            const head = {...snake[0]};
+            
+            switch(direction) {
+                case 'right': head.x++; break;
+                case 'left': head.x--; break;
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+            }
+            
+            // Проверка столкновения со стенами
+            const cols = Math.floor(canvas.width / gridSize);
+            const rows = Math.floor(canvas.height / gridSize);
+            if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
+                gameOverSnake();
+                return;
+            }
+            
+            // Проверка столкновения с собой
+            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                gameOverSnake();
+                return;
+            }
+            
+            snake.unshift(head);
+            
+            // Проверка, съели ли еду
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreElement.textContent = score;
+                spawnFood();
+                // Ускоряем игру, но не слишком быстро
+                if (speed > 100) speed -= 5;
+                clearInterval(gameLoop);
+                gameLoop = setInterval(update, speed);
+            } else {
+                snake.pop();
+            }
+            
+            draw();
+        }
+        
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Сетка
+            ctx.strokeStyle = 'rgba(140, 190, 200, 0.06)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Змейка
+            snake.forEach((segment, index) => {
+                const x = segment.x * gridSize;
+                const y = segment.y * gridSize;
+                
+                if (index === 0) {
+                    // Голова — машинка
+                    ctx.font = `${gridSize - 2}px serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    // Поворачиваем машинку в зависимости от направления
+                    ctx.save();
+                    ctx.translate(x + gridSize/2, y + gridSize/2);
+                    
+                    switch(direction) {
+                        case 'left':
+                            // Едет влево — нормально, нос смотрит влево
+                            break;
+                        case 'right':
+                            // Едет вправо — отражаем по горизонтали, нос смотрит вправо
+                            ctx.scale(-1, 1);
+                            break;
+                        case 'up':
+                            // Едет вверх — поворачиваем на -90° и отражаем по горизонтали
+                            ctx.rotate(-Math.PI/2);
+                            ctx.scale(-1, 1);
+                            break;
+                        case 'down':
+                            // Едет вниз — поворачиваем на 90° и отражаем по горизонтали
+                            ctx.rotate(Math.PI/2);
+                            ctx.scale(-1, 1);
+                            break;
+                    }
+                    
+                    ctx.fillText('🚚', 0, 0);
+                    ctx.restore();
+                } else {
+                    // Тело — мешки с деньгами
+                    ctx.font = `${gridSize - 4}px serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('💰', x + gridSize/2, y + gridSize/2);
+                }
+            });
+            
+            // Еда — банкомат
+            ctx.font = `${gridSize - 2}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🏧', food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2);
+        }
+        
+        function gameOverSnake() {
+            clearInterval(gameLoop);
+            isPlaying = false;
+            finalScoreElement.textContent = score;
+            overlay.style.display = 'block';
+            btnPlay.textContent = '▶ Играть';
+            btnPlay.classList.remove('playing');
+            draw(); // Последний кадр
+        }
+        
+        function startSnake() {
+            resizeCanvas();
+            // Если игра была на паузе — не сбрасываем, просто продолжаем
+            if (snake.length > 0 && !isPlaying && overlay.style.display === 'none') {
+                // Продолжаем с того же места (пауза)
+                overlay.style.display = 'none';
+                isPlaying = true;
+                btnPlay.textContent = '⏹ Стоп';
+                btnPlay.classList.add('playing');
+                gameLoop = setInterval(update, speed);
+                return;
+            }
+            // Иначе — новая игра
+            init();
+            overlay.style.display = 'none';
+            speed = 200;
+            isPlaying = true;
+            btnPlay.textContent = '⏹ Стоп';
+            btnPlay.classList.add('playing');
+            draw();
+            gameLoop = setInterval(update, speed);
+        }
+        
+        function stopSnake() {
+            clearInterval(gameLoop);
+            isPlaying = false;
+            btnPlay.textContent = '▶ Играть';
+            btnPlay.classList.remove('playing');
+            // Не показываем overlay — это пауза, а не конец игры
+        }
+        
+        function toggleSnake() {
+            if (isPlaying) {
+                stopSnake();
+            } else {
+                startSnake();
+            }
+        }
+        
+        btnPlay.addEventListener('click', toggleSnake);
+        
+        // Управление стрелками
+        document.addEventListener('keydown', (e) => {
+            if (!isPlaying) return;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    if (direction !== 'down') nextDirection = 'up';
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    if (direction !== 'up') nextDirection = 'down';
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    if (direction !== 'right') nextDirection = 'left';
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    if (direction !== 'left') nextDirection = 'right';
+                    e.preventDefault();
+                    break;
+            }
+        });
+        
+        // Начальный рисунок
+        init();
+        draw();
+    })();
+
     // Функция для загрузки маршрутов из routes.json
     async function loadRoutes(day) {
         const resultBox = document.getElementById('resultBox');
