@@ -1,58 +1,90 @@
-import math
+import networkx as nx
 from atm import Atm
+from route_utils import calculate_travel_time
 
 
-def distance(a: Atm, b: Atm) -> float:
+def travel_time_between(a: Atm, b: Atm, G, atm_to_node: dict) -> float:
     """
-    Вычисляет расстояние между двумя банкоматами по координатам.
-    Используется евклидово расстояние .
+    Считает реальное время в пути между двумя банкоматами по дорожному графу.
     """
-    return math.sqrt((a.lat - b.lat) ** 2 + (a.lon - b.lon) ** 2)
+    node_a = atm_to_node[a.id]
+    node_b = atm_to_node[b.id]
+    try:
+        return nx.shortest_path_length(G, node_a, node_b, weight='travel_time')
+    except nx.NetworkXNoPath:
+        return float('inf')
 
 
-def nearest_neighbor_route(atms: list[Atm], start_atm: Atm | None = None) -> list[Atm]:
+def build_time_matrix(atms, G, atm_to_node):
     """
-    Строит маршрут обхода банкоматов с помощью жадного алгоритма
-    (метод ближайшего соседа)
-
-    :param atms: список банкоматов
-    :param start_atm: начальный банкомат (если не задан — берём первый)
-    :return: список банкоматов в порядке обхода
+    Строит матрицу времён между всеми парами банкоматов.
+    Один запуск Дейкстры на каждый банкомат находит время до ВСЕХ остальных.
+    Возвращает словарь: matrix[(id_a, id_b)] = время в секундах.
     """
+    matrix = {}
+    for atm in atms:
+        source = atm_to_node[atm.id]
+        lengths = nx.single_source_dijkstra_path_length(G, source, weight='travel_time')
+        for other in atms:
+            dest = atm_to_node[other.id]
+            matrix[(atm.id, other.id)] = lengths.get(dest, float('inf'))
+    return matrix
 
-    # Если список пустой — возвращаем пустой маршрут
+
+def nearest_neighbor_route_matrix(atms, G, atm_to_node):
+    """
+    Жадный маршрут с использованием готовой матрицы времён (быстро).
+    """
+    if not atms:
+        return []
+    matrix = build_time_matrix(atms, G, atm_to_node)
+    unvisited = atms.copy()
+    current = unvisited.pop(0)
+    route = [current]
+    while unvisited:
+        nearest = min(unvisited, key=lambda a: matrix[(current.id, a.id)])
+        route.append(nearest)
+        unvisited.remove(nearest)
+        current = nearest
+    return route
+
+
+def nearest_neighbor_route(atms: list[Atm], start_atm=None,
+                           use_graph: bool = True) -> list[Atm]:
+    """
+    Строит маршрут обхода банкоматов жадным алгоритмом.
+
+    use_graph=True — точный расчёт по дорогам через матрицу времён (OSMnx)
+    use_graph=False — быстрый расчёт по расстоянию (для CI)
+    """
     if not atms:
         return []
 
-    # Копируем список, чтобы не изменять исходный
-    unvisited = atms.copy()
+    if use_graph:
+        # Точный режим: загружаем граф один раз, строим матрицу, идём по ней
+        from map_loader import load_moscow_graph
+        from node_matcher import match_atms_to_nodes
 
-    # Определяем начальную точку маршрута
-    if start_atm:
-        current = start_atm
-        unvisited.remove(start_atm)  # удаляем его из непосещённых
+        G = load_moscow_graph()
+        atm_to_node = match_atms_to_nodes(atms)
+        return nearest_neighbor_route_matrix(atms, G, atm_to_node)
     else:
-        current = unvisited.pop(0)   # берём первый банкомат
+        # Быстрый режим: без графа, по географическому расстоянию
+        def time_to(current, candidate):
+            return calculate_travel_time(current, candidate)
 
-    # Начинаем маршрут с текущего банкомата
-    route = [current]
+        unvisited = atms.copy()
+        if start_atm:
+            current = start_atm
+            unvisited.remove(start_atm)
+        else:
+            current = unvisited.pop(0)
 
-    # Пока есть непосещённые банкоматы
-    while unvisited:
-        # Находим ближайший банкомат к текущему
-        nearest = min(
-            unvisited,
-            key=lambda atm: distance(current, atm)
-        )
+        route = [current]
+        while unvisited:
+            nearest = min(unvisited, key=lambda atm: time_to(current, atm))
+            route.append(nearest)
+            unvisited.remove(nearest)
+            current = nearest
 
-        # Добавляем его в маршрут
-        route.append(nearest)
-
-        # Удаляем из списка непосещённых
-        unvisited.remove(nearest)
-
-        # Переходим к нему (он становится текущим)
-        current = nearest
-
-    # Возвращаем готовый маршрут
-    return route
+        return route
