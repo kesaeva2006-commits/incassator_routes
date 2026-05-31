@@ -530,14 +530,12 @@
         loadRoutes(1);  // по умолчанию показываем день 1
     });
 
-    // Переключение дней (кнопки)
-    document.querySelectorAll('.day-btn').forEach(btn => {
-        // пропускаем кнопку статистики — у неё своя логика
-        if (btn.id === 'btnStats') return;
+    // Переключение дней (только кнопки с data-day — дни 1/2/3)
+    document.querySelectorAll('.day-btn[data-day]').forEach(btn => {
         btn.addEventListener('click', function() {
             const day = this.getAttribute('data-day');
-            // Активная кнопка
-            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+            // Активная кнопка (тоже только среди дней)
+            document.querySelectorAll('.day-btn[data-day]').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             // Меняем карту
             document.getElementById('mapFrame').src = `map_day${day}.html`;
