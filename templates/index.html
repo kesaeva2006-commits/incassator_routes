@@ -858,14 +858,29 @@
             isPlaying = false;
         }
         
+        function pauseGame() {
+            obstacle.classList.remove('moving');
+            road.classList.remove('moving');
+            clearInterval(collisionCheckInterval);
+            btnPlay.textContent = '▶ Играть';
+            btnPlay.classList.remove('playing');
+            isPlaying = false;
+            // НЕ сбрасываем jumpedCount, НЕ показываем gameOver
+        }
+        
         function startGame() {
-            jumpedCount = 0;
+            // Если это рестарт после столкновения — сбрасываем
+            if (isGameOver) {
+                jumpedCount = 0;
+                scoreElement.textContent = '0';
+            }
+            // Если это пауза — счёт остаётся
+            
             isGameOver = false;
             isJumping = false;
             obstaclePassed = false;
             car.classList.remove('jumping');
             gameOverElement.style.display = 'none';
-            scoreElement.textContent = '0';
             isPlaying = true;
             btnPlay.textContent = '⏹ Стоп';
             btnPlay.classList.add('playing');
@@ -878,7 +893,11 @@
         
         function toggleGame() {
             if (isPlaying) {
-                endGame();
+                if (isGameOver) {
+                    startGame();  // рестарт после столкновения
+                } else {
+                    pauseGame();  // просто пауза
+                }
             } else {
                 startGame();
             }
