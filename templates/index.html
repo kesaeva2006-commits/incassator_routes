@@ -433,12 +433,25 @@
                 <span class="critical-dot"></span>
                 Критических банкоматов: 3 - требуется срочный объезд
             </div>
-        </div>
+</div>
         
         <div class="day-tabs" id="dayTabs">
             <button class="day-btn active" data-day="1">День 1</button>
             <button class="day-btn" data-day="2">День 2</button>
             <button class="day-btn" data-day="3">День 3</button>
+            <button class="day-btn" id="btnStats">Статистика</button>
+        </div>
+
+        <div id="statsOverlay" style="display:none; position:fixed; inset:0;
+             background:rgba(10,47,63,0.45); z-index:2000;
+             justify-content:center; align-items:center;">
+          <div style="background:#fff; border-radius:20px; padding:30px 34px;
+               max-width:420px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+            <div class="result-title">Статистика — день <span id="statsDay">1</span></div>
+            <div id="statsBody"></div>
+            <button class="day-btn active" style="margin-top:18px;"
+               onclick="document.getElementById('statsOverlay').style.display='none'">Закрыть</button>
+          </div>
         </div>
         
         <div class="map-area" id="mapArea">
@@ -470,26 +483,10 @@
             let html = '<div class="result-title">Построенные маршруты</div>';
             dayRoutes.forEach(route => {
                 const stopsCount = route.stops.length;
-                
-                // Рассчитываем примерное время в пути (минуты)
-                let totalMinutes = 0;
-                const points = route.stops;
-                for (let i = 1; i < points.length; i++) {
-                    const [lat1, lon1] = points[i-1];
-                    const [lat2, lon2] = points[i];
-                    // Формула гаверсинусов для расстояния в км
-                    const R = 6371;
-                    const dLat = (lat2 - lat1) * Math.PI / 180;
-                    const dLon = (lon2 - lon1) * Math.PI / 180;
-                    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                    const km = R * c;
-                    // Время в минутах при скорости 40 км/ч
-                    totalMinutes += (km / 40) * 60;
-                }
+                const totalMinutes = route.total_time || 0;   // берём из routes.json
                 const hours = Math.floor(totalMinutes / 60);
                 const minutes = Math.round(totalMinutes % 60);
-                
+
                 html += `<div class="result-item">
                     <span class="result-icon">🚗</span>
                     <span><strong>Машина ${route.car}</strong> — ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
@@ -503,6 +500,10 @@
                     </div>`;
             
             resultBox.innerHTML = html;
+
+            // Сохраняем данные дня для окна статистики
+            window._dayRoutes = dayRoutes;
+            window._day = day;
         } catch (error) {
             // Если routes.json недоступен — показываем демо-данные
             resultBox.innerHTML = `
@@ -531,6 +532,8 @@
 
     // Переключение дней (кнопки)
     document.querySelectorAll('.day-btn').forEach(btn => {
+        // пропускаем кнопку статистики — у неё своя логика
+        if (btn.id === 'btnStats') return;
         btn.addEventListener('click', function() {
             const day = this.getAttribute('data-day');
             // Активная кнопка
@@ -541,6 +544,23 @@
             // Обновляем карточки машин
             loadRoutes(day);
         });
+    });
+
+    // Обработчик кнопки «Статистика»
+    document.getElementById('btnStats').addEventListener('click', function() {
+        const routes = window._dayRoutes || [];
+        const carsWorking = routes.filter(r => r.stops.length > 0).length;
+        const totalStops = routes.reduce((s,r)=> s + r.stops.length, 0);
+        const totalCritical = routes.reduce((s,r)=> s + (r.critical_count||0), 0);
+        const totalMin = routes.reduce((s,r)=> s + (r.total_time||0), 0);
+        const h = Math.floor(totalMin/60), m = Math.round(totalMin%60);
+        document.getElementById('statsDay').textContent = window._day || 1;
+        document.getElementById('statsBody').innerHTML = `
+            <div class="result-item"><span class="result-icon">🚗</span><span>Машин в работе: <strong>${carsWorking}</strong> из 5</span></div>
+            <div class="result-item"><span class="result-icon">🏧</span><span>Банкоматов в объезде: <strong>${totalStops}</strong></span></div>
+            <div class="result-item"><span class="result-icon">⚠️</span><span>Критических: <strong>${totalCritical}</strong></span></div>
+            <div class="result-item"><span class="result-icon">⏱️</span><span>Суммарное время: <strong>${h} ч ${m} мин</strong></span></div>`;
+        document.getElementById('statsOverlay').style.display = 'flex';
     });
 
     // Функция загрузки банкоматов (оставлена для совместимости, не используется)
