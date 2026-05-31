@@ -32,27 +32,22 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements-build.txt
 
-      # 3.1 Кэшируем граф Москвы между запусками Actions.
-      # Первый раз граф скачивается (~2-5 мин), сохраняется в moscow_graph.pkl.
-      # Все следующие запуски берут его из кэша — скачивания не будет.
-      - name: Cache Moscow graph
-        uses: actions/cache@v4
-        with:
-          path: moscow_graph.pkl
-          key: moscow-graph-v3
+      # # 3.1 Кэшируем граф Москвы (временно отключено)
+      # - name: Cache Moscow graph
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: moscow_graph.pkl
+      #     key: moscow-graph-v6
 
-      - name: Download graph from repo if not cached
-        run: |
-          if [ ! -f moscow_graph.pkl ]; then
-            curl -L -o moscow_graph.pkl \
-            "https://raw.githubusercontent.com/kesaeva2006-commits/incassator_routes/develop/moscow_graph.pkl"
-          fi
+      # На всякий случай удаляем повреждённый файл
+      - name: Remove corrupted graph cache
+        run: rm -f moscow_graph.pkl
 
-      # 4.1 Новый шаг — генерируем банкоматы со статистикой
+      # 4.1 Генерируем банкоматы
       - name: Generate atms.json with statistics
         run: python generate_atms_json.py
 
-      # 4.2 Собираем маршруты: atms.json -> routes.json
+      # 4.2 Собираем маршруты
       - name: Build routes.json
         run: python build_routes.py
         env:
