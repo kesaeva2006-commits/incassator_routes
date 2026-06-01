@@ -462,117 +462,78 @@
     </div>
 
 <script>
-    // Функция для загрузки маршрутов из routes.json
-    async function loadRoutes(day) {
+    // Адрес бэкенда – тот же, что загрузил страницу
+const API_BASE = window.location.origin;
+
+function showLoader() {
+    const resultBox = document.getElementById('resultBox');
+    if (resultBox) {
+        resultBox.innerHTML = '<div style="text-align:center; color:#279ed1;">Загрузка маршрутов...</div>';
+        resultBox.classList.add('show');
+    }
+}
+
+function displayRoutes(routes) {
+    const resultBox = document.getElementById('resultBox');
+    if (!resultBox) return;
+
+    let html = '<div class="result-title">Построенные маршруты</div>';
+    routes.forEach(route => {
+        const hours = Math.floor(route.total_time / 60);
+        const minutes = route.total_time % 60;
+        html += `
+            <div class="result-item">
+                <span class="result-icon">🚗</span>
+                <span><strong>Машина ${route.group_id}</strong> — ${route.stops.length} банкоматов, ${hours} ч ${minutes} мин</span>
+            </div>
+        `;
+    });
+    const totalCritical = routes.reduce((sum, r) => sum + (r.critical_count || 0), 0);
+    if (totalCritical > 0) {
+        html += `
+            <div class="critical-alert">
+                <span class="critical-dot"></span>
+                Критических банкоматов: ${totalCritical} — требуется срочный объезд
+            </div>
+        `;
+    }
+    resultBox.innerHTML = html;
+    resultBox.classList.add('show');
+}
+
+async function loadRoutesForDay(day) {
+    showLoader();
+    try {
+        const response = await fetch(`${API_BASE}/routes?day=${day}`);
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        const routes = await response.json();
+        displayRoutes(routes);
+        const mapFrame = document.getElementById('mapFrame');
+        if (mapFrame) {
+            mapFrame.src = `/templates/map_day${day}.html`;
+            document.getElementById('mapArea')?.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки маршрутов:', error);
         const resultBox = document.getElementById('resultBox');
-        resultBox.innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
-        
-        try {
-            // Загружаем routes.json из той же папки (templates/)
-            const response = await fetch('routes.json');
-            if (!response.ok) throw new Error('Файл routes.json не найден');
-            const allRoutes = await response.json();
-            
-            // Фильтруем по дню и сортируем по номеру машины
-            const dayRoutes = allRoutes.filter(r => r.day == day).sort((a,b) => a.car - b.car);
-            if (dayRoutes.length === 0) throw new Error('Нет маршрутов для этого дня');
-            
-            // Подсчитываем общее количество критических банкоматов за день
-            const totalCritical = dayRoutes.reduce((sum, route) => sum + (route.critical_count || 0), 0);
-            
-            let html = '<div class="result-title">Построенные маршруты</div>';
-            dayRoutes.forEach(route => {
-                const stopsCount = route.stops.length;
-                const totalMinutes = route.total_time || 0;   // берём из routes.json
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = Math.round(totalMinutes % 60);
-
-                html += `<div class="result-item">
-                    <span class="result-icon">🚗</span>
-                    <span><strong>Машина ${route.car}</strong> — ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
-                </div>`;
-            });
-            
-            // Добавляем блок с критическими банкоматами
-            html += `<div class="critical-alert">
-                        <span class="critical-dot"></span>
-                        Критических банкоматов: ${totalCritical} - требуется срочный объезд
-                    </div>`;
-            
-            resultBox.innerHTML = html;
-
-            // Сохраняем данные дня для окна статистики
-            window._dayRoutes = dayRoutes;
-            window._day = day;
-        } catch (error) {
-            // Если routes.json недоступен — показываем демо-данные
-            resultBox.innerHTML = `
-                <div class="result-title">Построенные маршруты</div>
-                <div class="result-item"><span class="result-icon">🚗</span><span><strong>Машина 1</strong> — 18 банкоматов, 7 ч 20 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚙</span><span><strong>Машина 2</strong> — 15 банкоматов, 6 ч 50 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚐</span><span><strong>Машина 3</strong> — 20 банкоматов, 7 ч 45 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚛</span><span><strong>Машина 4</strong> — 17 банкоматов, 7 ч 10 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚎</span><span><strong>Машина 5</strong> — 16 банкоматов, 6 ч 55 мин</span></div>
-                <div class="critical-alert">
-                    <span class="critical-dot"></span>
-                    Критических банкоматов: 3 - требуется срочный объезд
-                </div>
-            `;
+        if (resultBox) {
+            resultBox.innerHTML = '<div style="color:red;">Не удалось загрузить маршруты. Запустите сервер и проверьте БД.</div>';
+            resultBox.classList.add('show');
         }
     }
+}
 
-    // Обработчик кнопки «Построить маршрут»
-    document.getElementById('btnBuildRoute').addEventListener('click', function() {
-        document.getElementById('resultBox').classList.add('show');
-        document.getElementById('mapArea').classList.add('show');
-        document.getElementById('dayTabs').classList.add('show');
-        this.textContent = 'Обновить маршрут';
-        loadRoutes(1);  // по умолчанию показываем день 1
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    const buildBtn = document.getElementById('btnBuildRoute');
+    if (buildBtn) buildBtn.addEventListener('click', () => loadRoutesForDay(1));
 
-    // Переключение дней (только кнопки с data-day — дни 1/2/3)
-    document.querySelectorAll('.day-btn[data-day]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const day = this.getAttribute('data-day');
-            // Активная кнопка (тоже только среди дней)
-            document.querySelectorAll('.day-btn[data-day]').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            // Меняем карту
-            document.getElementById('mapFrame').src = `map_day${day}.html`;
-            // Обновляем карточки машин
-            loadRoutes(day);
-        });
-    });
-
-    // Обработчик кнопки «Статистика»
-    document.getElementById('btnStats').addEventListener('click', function() {
-        const routes = window._dayRoutes || [];
-        const carsWorking = routes.filter(r => r.stops.length > 0).length;
-        const totalStops = routes.reduce((s,r)=> s + r.stops.length, 0);
-        const totalCritical = routes.reduce((s,r)=> s + (r.critical_count||0), 0);
-        const totalMin = routes.reduce((s,r)=> s + (r.total_time||0), 0);
-        const h = Math.floor(totalMin/60), m = Math.round(totalMin%60);
-        document.getElementById('statsDay').textContent = window._day || 1;
-        document.getElementById('statsBody').innerHTML = `
-            <div class="result-item"><span class="result-icon">🚗</span><span>Машин в работе: <strong>${carsWorking}</strong> из 5</span></div>
-            <div class="result-item"><span class="result-icon">🏧</span><span>Банкоматов в объезде: <strong>${totalStops}</strong></span></div>
-            <div class="result-item"><span class="result-icon">⚠️</span><span>Критических: <strong>${totalCritical}</strong></span></div>
-            <div class="result-item"><span class="result-icon">⏱️</span><span>Суммарное время: <strong>${h} ч ${m} мин</strong></span></div>`;
-        document.getElementById('statsOverlay').style.display = 'flex';
-    });
-
-    // Функция загрузки банкоматов (оставлена для совместимости, не используется)
-    async function loadAtms() {
-        try {
-            const response = await fetch('/atms');
-            const atms = await response.json();
-            console.log('Загружено банкоматов:', atms.length);
-            return atms;
-        } catch (error) {
-            console.log('Сервер недоступен, банкоматы загружаются из map.html');
-            return [];
-        }
-    }
+    const day1Btn = document.getElementById('day1Btn');
+    if (day1Btn) day1Btn.addEventListener('click', () => loadRoutesForDay(1));
+    const day2Btn = document.getElementById('day2Btn');
+    if (day2Btn) day2Btn.addEventListener('click', () => loadRoutesForDay(2));
+    const day3Btn = document.getElementById('day3Btn');
+    if (day3Btn) day3Btn.addEventListener('click', () => loadRoutesForDay(3));
+});
 </script>
 
 </body>
