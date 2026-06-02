@@ -113,81 +113,66 @@ def route_total_minutes(route, G, atm_to_node):
 
 def build_one_day(atms, day, G, atm_to_node):
     """
-    Строит маршруты для одного дня для всех 5 машин.
-    
-    Псевдокод:
-        если день > 1: обновить уровни бункеров на 24 часа
-        разделить банкоматы на 5 кластеров (KMeans по координатам)
-        для каждого кластера:
-            отобрать только RED и YELLOW (зелёные не трогаем)
-            если меньше 2 банкоматов → маршрут из того что есть
-            иначе:
-                отсортировать: RED раньше YELLOW
-                построить жадный маршрут по реальным дорогам
-                посчитать время между каждой парой точек
-                обрезать маршрут если суммарное время > 8 часов
-            сбросить бункеры объезженных банкоматов
-        вернуть маршруты, счётчики критических, времена
-    """
-    from greedy_algorithm import build_time_matrix
-    from route_utils import trim_route_by_time
+    Строит маршруты инкассации на один день.
 
-    # День 2 и 3: банкоматы работали 24 часа — обновляем уровни бункеров
+    atms - список банкоматов
+    day - номер дня (если >1, обновляем уровни)
+    G - граф дорог
+    atm_to_node - соответствие ATM -> узел графа
+    """
+
+    from route_utils import trim_route_by_time, calculate_travel_time
+
+    #  Если это не первый день — обновляем состояние банкоматов (накопление денег)
     if day > 1:
         for atm in atms:
-            atm.update_levels(24)
+            atm.update_levels(24)  # обновление за 24 часа
 
-    # Делим 1000 банкоматов на 5 географических кластеров (по одному на машину)
+    #  Делим банкоматы на кластеры (по числу машин)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
 
-    routes = []
-    critical_counts = []
-    times = []
+    routes = []            # итоговые маршруты
+    critical_counts = []   # сколько критичных банкоматов обслужено
+    times = []             # время маршрутов
 
+    #  Обрабатываем каждый кластер (каждую машину)
     for cluster in clusters:
-        # Оставляем только критические — RED и YELLOW
-        # Зелёные банкоматы объезжать не нужно
+
+        #  Выбираем только срочные банкоматы (RED и YELLOW)
         urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
 
+        #  Если срочных меньше 2 — просто берём как есть
         if len(urgent) < 2:
-            # Если 0 или 1 банкомат — маршрут тривиальный
             route = list(urgent)
+
         else:
-            # Красные первыми — они важнее
+            #  Сортируем по приоритету (например, по степени переполнения)
             sorted_urgent = sorted(urgent, key=get_priority)
 
-            # Берём только узлы графа для банкоматов этого кластера
-            sub_atm_to_node = {
-                atm.id: atm_to_node[atm.id]
-                for atm in sorted_urgent
-                if atm.id in atm_to_node
-            }
-
-            # Строим жадный маршрут по реальным дорогам (ближайший сосед + Дейкстра)
+            #  Строим маршрут методом ближайшего соседа (жадный алгоритм)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
 
-            # Строим матрицу времён между всеми парами банкоматов кластера
-            # matrix[(id_a, id_b)] = время в секундах
-            matrix = build_time_matrix(sorted_urgent, G, sub_atm_to_node)
+            # ⏱ Считаем время между точками (по прямой, не по графу)
+            travel_times = [
+                calculate_travel_time(route[i-1], route[i])
+                for i in range(1, len(route))
+            ]
 
-            # Переводим в минуты для каждого перехода маршрута
-            travel_times = []
-            for i in range(1, len(route)):
-                t = matrix.get((route[i-1].id, route[i].id), 0) / 60
-                travel_times.append(t)
-
-            # Обрезаем маршрут если суммарное время превышает 8 часов (480 мин)
+            #  Обрезаем маршрут, если превышает 8 часов
             route = trim_route_by_time(route, travel_times)
 
-        # Инкассаторы обслужили эти банкоматы — сбрасываем бункеры
-        # Это влияет на расчёт следующего дня
+        #  После посещения банкомата — "обнуляем" вход и заполняем выдачу
         for atm in route:
-            atm.current_in = 0               # бункер приёма опустошён
-            atm.current_out = atm.capacity_out  # бункер выдачи пополнен
+            atm.current_in = 0
+            atm.current_out = atm.capacity_out
 
+        #  Сохраняем результаты
         routes.append(route)
+
+        # сколько банкоматов обслужили
         critical_counts.append(len(route))
-        # Считаем итоговое время маршрута для сохранения в routes.json
+
+        #  реальное время маршрута по графу дорог
         times.append(route_total_minutes(route, G, atm_to_node))
 
     return routes, critical_counts, times
