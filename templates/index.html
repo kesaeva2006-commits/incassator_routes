@@ -522,19 +522,51 @@ async function loadRoutesForDay(day) {
         }
     }
 }
-
+// Функция для загрузки статистики по банкоматам (эндпоинт /atms)
+async function loadAtmsStats() {
+    try {
+        const response = await fetch('/atms');
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        const atms = await response.json();
+        
+        const counts = {
+            red: atms.filter(atm => atm.status === 'red').length,
+            yellow: atms.filter(atm => atm.status === 'yellow').length,
+            green: atms.filter(atm => atm.status === 'green').length
+        };
+        
+        console.log('Статистика банкоматов (из /atms):', counts);
+        
+        // Если на странице есть блок для статистики, можно обновить его
+        const statsContainer = document.getElementById('atmsStats');
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <div class="result-item"><span class="result-icon">🔴</span><span>Критических (RED): <strong>${counts.red}</strong></span></div>
+                <div class="result-item"><span class="result-icon">🟡</span><span>Внимание (YELLOW): <strong>${counts.yellow}</strong></span></div>
+                <div class="result-item"><span class="result-icon">🟢</span><span>Норма (GREEN): <strong>${counts.green}</strong></span></div>
+            `;
+        }
+        return counts;
+    } catch (error) {
+        console.error('Ошибка загрузки /atms:', error);
+        return null;
+    }
+}
 document.addEventListener('DOMContentLoaded', () => {
     const buildBtn = document.getElementById('btnBuildRoute');
     if (buildBtn) buildBtn.addEventListener('click', () => loadRoutesForDay(1));
-
+   
     const day1Btn = document.getElementById('day1Btn');
     if (day1Btn) day1Btn.addEventListener('click', () => loadRoutesForDay(1));
     const day2Btn = document.getElementById('day2Btn');
     if (day2Btn) day2Btn.addEventListener('click', () => loadRoutesForDay(2));
     const day3Btn = document.getElementById('day3Btn');
     if (day3Btn) day3Btn.addEventListener('click', () => loadRoutesForDay(3));
+
+    // Вызов второго эндпоинта
+    loadAtmsStats();
 });
-</script>
+    </script>
 
 </body>
 </html>
