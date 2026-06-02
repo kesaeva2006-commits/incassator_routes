@@ -1,9 +1,9 @@
 name: Python CI
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "deploy, develop" ]
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "deploy, develop" ]
 jobs:
   test:
     runs-on: ubuntu-latest
