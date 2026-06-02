@@ -102,9 +102,7 @@ def build_one_day(atms, day):
     times = []
     for cluster in clusters:
         # Оставляем только критические (RED и YELLOW), зелёные пропускаем
-        # В build_one_day измени эту строчку
-        hours_ahead = 24 - (day - 1) * 6  # день 1: 24ч, день 2: 18ч, день 3: 12ч
-        urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=hours_ahead) in ('RED', 'YELLOW')]
+        urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=24) in ('RED', 'YELLOW')]
         if len(urgent) < 2:
             route = list(urgent)
         else:
