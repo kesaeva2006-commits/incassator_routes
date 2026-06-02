@@ -112,71 +112,33 @@ def route_total_minutes(route, G, atm_to_node):
 
 
 def build_one_day(atms, day, G, atm_to_node):
-    """
-    Строит маршруты инкассации на один день.
-
-    atms - список банкоматов
-    day - номер дня (если >1, обновляем уровни)
-    G - граф дорог
-    atm_to_node - соответствие ATM -> узел графа
-    """
-
-    from route_utils import trim_route_by_time, calculate_travel_time
-
-    #  Если это не первый день — обновляем состояние банкоматов (накопление денег)
     if day > 1:
         for atm in atms:
-            atm.update_levels(24)  # обновление за 24 часа
+            atm.update_levels(24)
 
-    #  Делим банкоматы на кластеры (по числу машин)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
+    routes = []
+    critical_counts = []
+    times = []
 
-    routes = []            # итоговые маршруты
-    critical_counts = []   # сколько критичных банкоматов обслужено
-    times = []             # время маршрутов
-
-    #  Обрабатываем каждый кластер (каждую машину)
     for cluster in clusters:
-
-        #  Выбираем только срочные банкоматы (RED и YELLOW)
         urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
 
-        #  Если срочных меньше 2 — просто берём как есть
         if len(urgent) < 2:
             route = list(urgent)
-
         else:
-            #  Сортируем по приоритету (например, по степени переполнения)
             sorted_urgent = sorted(urgent, key=get_priority)
-
-            #  Строим маршрут методом ближайшего соседа (жадный алгоритм)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
 
-            # ⏱ Считаем время между точками (по прямой, не по графу)
-            travel_times = [
-                calculate_travel_time(route[i-1], route[i])
-                for i in range(1, len(route))
-            ]
-
-            #  Обрезаем маршрут, если превышает 8 часов
-            route = trim_route_by_time(route, travel_times)
-
-        #  После посещения банкомата — "обнуляем" вход и заполняем выдачу
         for atm in route:
             atm.current_in = 0
             atm.current_out = atm.capacity_out
 
-        #  Сохраняем результаты
         routes.append(route)
-
-        # сколько банкоматов обслужили
         critical_counts.append(len(route))
-
-        #  реальное время маршрута по графу дорог
         times.append(route_total_minutes(route, G, atm_to_node))
 
     return routes, critical_counts, times
-
 
 def main():
     """
