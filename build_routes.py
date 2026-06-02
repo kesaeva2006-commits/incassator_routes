@@ -80,62 +80,35 @@ def route_total_minutes(route, use_graph=True):
         return round(sum(calculate_travel_time(a, b)
                          for a, b in zip(route, route[1:])), 1)
 
-def trim_route_by_graph(route, G, atm_to_node, service_time=15, reserve=30):
-    """
-    Обрезает маршрут если превышает 8 часов.
-    Использует реальное время по дорогам через граф.
-    """
-    WORKDAY_MINUTES = 480
-    accumulated = reserve  # резерв в начале
-
-    for i, atm in enumerate(route):
-        if i > 0:
-            # Реальное время по дорогам в секундах → переводим в минуты
-            t_sec = travel_time_between(route[i-1], atm, G, atm_to_node)
-            if t_sec == float('inf'):
-                t_sec = 0
-            accumulated += t_sec / 60.0
-
-        accumulated += service_time  # обслуживание банкомата
-
-        if accumulated > WORKDAY_MINUTES:
-            return route[:i]  # обрезаем — этот банкомат уже не влезает
-
-    return route  # весь маршрут влезает
-
-
 def build_one_day(atms, day):
+    """
+    Строит маршруты для конкретного дня.
+    Обновляет уровни банкоматов до этого дня, затем кластеризует,
+    отсеивает зелёные банкоматы и строит маршруты только для критических.
+    """
+    # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
     for atm in atms:
         atm.current_in = 0
         atm.current_out = atm.capacity_out
         atm.update_levels(hours_passed)
 
+    # 2. Кластеризуем (делим на 5 групп по географической близости)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
 
-    # Загружаем граф ОДИН РАЗ для всех кластеров
-    from map_loader import load_moscow_graph
-    from node_matcher import match_atms_to_nodes
-    G = load_moscow_graph()
-
+    # 3. Для каждого кластера строим маршрут только из критических банкоматов
     routes = []
     critical_counts = []
     times = []
-
     for cluster in clusters:
+        # Оставляем только критические (RED и YELLOW), зелёные пропускаем
         urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
         if len(urgent) < 2:
             route = list(urgent)
         else:
+            # Красные раньше жёлтых
             sorted_urgent = sorted(urgent, key=get_priority)
-            atm_to_node = match_atms_to_nodes(urgent, G=G)
-            route = nearest_neighbor_route(sorted_urgent, use_graph=True, G=G, atm_to_node=atm_to_node)
-
-        # Привязываем узлы для обрезки
-        if len(route) > 1:
-            atm_to_node_trim = match_atms_to_nodes(route, G=G)
-            route = trim_route_by_graph(route, G, atm_to_node_trim)
-
+            route = nearest_neighbor_route(sorted_urgent, use_graph=True)
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, use_graph=True))
@@ -210,4 +183,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
