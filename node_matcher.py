@@ -3,7 +3,7 @@ from atm import Atm
 from map_loader import load_moscow_graph
 
 
-def match_atms_to_nodes(atms: list[Atm], G=None) -> dict[int, int]:
+def match_atms_to_nodes(atms: list[Atm]) -> dict[int, int]:
     """
     Для каждого банкомата находит ближайший узел (перекрёсток) на карте дорог.
 
@@ -13,17 +13,16 @@ def match_atms_to_nodes(atms: list[Atm], G=None) -> dict[int, int]:
     каждый банкомат к ближайшему перекрёстку на карте.
 
     :param atms: список банкоматов
-    :param G: граф дорог — если передан снаружи, не загружает повторно
     :return: словарь {atm_id: node_id}
              atm_id  — ID банкомата
              node_id — ID ближайшего перекрёстка в графе
     """
 
-    # Загружаем граф только если не передали снаружи
-    if G is None:
-        G = load_moscow_graph()
-
+    # Загружаем граф дорог (из кэша — быстро)
+    G = load_moscow_graph()
     # Собираем координаты всех банкоматов в два списка
+    # ox.nearest_nodes принимает сразу все точки — это быстрее
+    # чем искать по одному в цикле
     lats = [atm.lat for atm in atms]  # широты
     lons = [atm.lon for atm in atms]  # долготы
 
