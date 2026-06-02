@@ -50,23 +50,25 @@ def nearest_neighbor_route_matrix(atms, G, atm_to_node):
 
 
 def nearest_neighbor_route(atms: list[Atm], start_atm=None,
-                           use_graph: bool = True) -> list[Atm]:
+                           use_graph: bool = True,
+                           G=None, atm_to_node=None) -> list[Atm]:
     """
     Строит маршрут обхода банкоматов жадным алгоритмом.
-
     use_graph=True — точный расчёт по дорогам через матрицу времён (OSMnx)
     use_graph=False — быстрый расчёт по расстоянию (для CI)
+    G, atm_to_node — если переданы снаружи, не загружает повторно
     """
     if not atms:
         return []
 
     if use_graph:
-        # Точный режим: загружаем граф один раз, строим матрицу, идём по ней
+        # Точный режим: загружаем граф только если не передали снаружи
         from map_loader import load_moscow_graph
         from node_matcher import match_atms_to_nodes
-
-        G = load_moscow_graph()
-        atm_to_node = match_atms_to_nodes(atms)
+        if G is None:
+            G = load_moscow_graph()
+        if atm_to_node is None:
+            atm_to_node = match_atms_to_nodes(atms, G=G)
         return nearest_neighbor_route_matrix(atms, G, atm_to_node)
     else:
         # Быстрый режим: без графа, по географическому расстоянию
