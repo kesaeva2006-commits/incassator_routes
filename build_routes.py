@@ -69,19 +69,23 @@ def route_total_minutes(route, G, atm_to_node):
     _, total = check_workday_limit(route, travel_time=travel_min)
     return round(total, 1)
 
-def build_one_day(atms, day, G, atm_to_node):
-    # 1. Обновляем уровни банкоматов до начала этого дня
-    
+def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
+    # 1. Сначала обновляем уровни (время прошло)
     if day > 1:
         for atm in atms:
             atm.update_levels(24)
+        # 2. Теперь сбрасываем банкоматы, объезженные вчера
+        if prev_day_visited:
+            for atm in prev_day_visited:
+                atm.current_in = 0
+                atm.current_out = atm.capacity_out
 
-    # 2. Кластеризуем
+    # 3. Кластеризуем и строим маршруты
     clusters = cluster_atms(atms, n_clusters=N_CARS)
-
     routes = []
     critical_counts = []
     times = []
+    visited_today = []
 
     for cluster in clusters:
         urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
@@ -92,16 +96,12 @@ def build_one_day(atms, day, G, atm_to_node):
             sub_atm_to_node = {atm.id: atm_to_node[atm.id] for atm in sorted_urgent if atm.id in atm_to_node}
             route = nearest_neighbor_route(sorted_urgent, use_graph=True, G=G, atm_to_node=sub_atm_to_node)
 
-        # После объезда сбрасываем бункеры
-        for atm in route:
-            atm.current_in = 0
-            atm.current_out = atm.capacity_out
-
+        visited_today.extend(route)
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, G, atm_to_node))
 
-    return routes, critical_counts, times
+    return routes, critical_counts, times, visited_today
 
 def main():
     from map_loader import load_moscow_graph
@@ -128,9 +128,12 @@ def main():
     atm_to_node = match_atms_to_nodes(atms_live, G)
 
     result = []
+    visited_prev = None
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
-        day_routes, day_critical_counts, day_times = build_one_day(atms_live, day, G, atm_to_node)
+        day_routes, day_critical_counts, day_times, visited_prev = build_one_day(
+            atms_live, day, G, atm_to_node, prev_day_visited=visited_prev
+        )
 
         for car_index, (route, critical_count, total_time) in enumerate(
                 zip(day_routes, day_critical_counts, day_times), start=1):
