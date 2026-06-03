@@ -70,15 +70,16 @@ def route_total_minutes(route, G, atm_to_node):
     return round(total, 1)
 
 def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
-    # 1. Сначала обновляем уровни (время прошло)
+    # 1. Сначала сбрасываем объезженные вчера
+    if prev_day_visited:
+        for atm in prev_day_visited:
+            atm.current_in = 0
+            atm.current_out = atm.capacity_out
+
+    # 2. Потом обновляем уровни (прошли сутки)
     if day > 1:
         for atm in atms:
             atm.update_levels(24)
-        # 2. Теперь сбрасываем банкоматы, объезженные вчера
-        if prev_day_visited:
-            for atm in prev_day_visited:
-                atm.current_in = 0
-                atm.current_out = atm.capacity_out
 
     # 3. Кластеризуем и строим маршруты
     clusters = cluster_atms(atms, n_clusters=N_CARS)
@@ -88,7 +89,7 @@ def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
     visited_today = []
 
     for cluster in clusters:
-        urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=0) in ('RED', 'YELLOW')]
+        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]  # ← вернули hours_ahead=24
         if len(urgent) < 2:
             route = list(urgent)
         else:
