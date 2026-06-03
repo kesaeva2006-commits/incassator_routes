@@ -19,7 +19,9 @@ def match_atms_to_nodes(atms: list[Atm]) -> dict[int, int]:
     """
 
     # Загружаем граф дорог (из кэша — быстро)
-    G = load_moscow_graph()
+    if G is None:
+        from map_loader import load_moscow_graph
+        G = load_moscow_graph()
     # Собираем координаты всех банкоматов в два списка
     # ox.nearest_nodes принимает сразу все точки — это быстрее
     # чем искать по одному в цикле
