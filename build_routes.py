@@ -88,7 +88,7 @@ def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
     visited_today = []
 
     for cluster in clusters:
-        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
+        urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=0) in ('RED', 'YELLOW')]
         if len(urgent) < 2:
             route = list(urgent)
         else:
