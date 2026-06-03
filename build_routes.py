@@ -89,7 +89,7 @@ def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
     visited_ids = {atm.id for atm in (prev_day_visited or [])}
 
     for cluster in clusters:
-    urgent = [atm for atm in cluster 
+        urgent = [atm for atm in cluster 
               if atm.get_risk_level() in ('RED', 'YELLOW')
               and atm.id not in visited_ids]  # ← не объезжали вчера
         else:
