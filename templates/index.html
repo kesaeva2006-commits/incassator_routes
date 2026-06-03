@@ -1165,7 +1165,7 @@
         
         try {
             // Загружаем routes.json из той же папки (templates/)
-            const response = await fetch('routes.json' + Date.now());
+            const response = await fetch('routes.json');
             if (!response.ok) throw new Error('Файл routes.json не найден');
             const allRoutes = await response.json();
             
