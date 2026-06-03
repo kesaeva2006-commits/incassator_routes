@@ -79,91 +79,41 @@ def route_total_minutes(route, use_graph=True):
         from route_utils import calculate_travel_time
         return round(sum(calculate_travel_time(a, b)
                          for a, b in zip(route, route[1:])), 1)
-        
-def trim_route_by_graph(route, G, atm_to_node, service_time=15, reserve=30):
-    from greedy_algorithm import build_time_matrix
-    WORKDAY_MINUTES = 480
-    
-    if len(route) < 2:
-        return route
-    
-    sub_atm_to_node = {atm.id: atm_to_node[atm.id] for atm in route if atm.id in atm_to_node}
-    matrix = build_time_matrix(route, G, sub_atm_to_node)
-    
-    accumulated = reserve
-    trimmed = []
-    for i, atm in enumerate(route):
-        if i > 0:
-            t = matrix.get((route[i-1].id, atm.id), 0) / 60
-            accumulated += t
-        accumulated += service_time
-        if accumulated > WORKDAY_MINUTES:
-            break
-        trimmed.append(atm)
-    return trimmed
-# def trim_route_by_graph(route, service_time=15, reserve=30):
-#     """Обрезает маршрут если превышает 8 часов."""
-#     from route_utils import calculate_travel_time
-#     WORKDAY_MINUTES = 480
-#     accumulated = reserve
-#     for i, atm in enumerate(route):
-#         if i > 0:
-#             accumulated += calculate_travel_time(route[i-1], atm)
-#         accumulated += service_time
-#         if accumulated > WORKDAY_MINUTES:
-#             return route[:i]
-#     return route
 
-def build_one_day(atms, day, G, atm_to_node, serviced_ids=None):
-    if serviced_ids is None:
-        serviced_ids = set()
-    
+def build_one_day(atms, day):
+    """
+    Строит маршруты для конкретного дня.
+    Обновляет уровни банкоматов до этого дня, затем кластеризует,
+    отсеивает зелёные банкоматы и строит маршруты только для критических.
+    """
     # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
     for atm in atms:
         atm.current_in = 0
         atm.current_out = atm.capacity_out
-        if atm.id in serviced_ids:
-            # Обслуженный — накопил только 24ч после обслуживания
-            atm.update_levels(24)
-        else:
-            # Необслуженный — накапливался с самого начала
-            atm.update_levels(hours_passed)
+        atm.update_levels(hours_passed)
 
-    # 2. Кластеризуем
+    # 2. Кластеризуем (делим на 5 групп по географической близости)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
 
+    # 3. Для каждого кластера строим маршрут только из критических банкоматов
     routes = []
     critical_counts = []
     times = []
-    visited_today = set()  # запоминаем кого посетили сегодня
     for cluster in clusters:
-        urgent = []
-        for atm in cluster:
-            if atm.id in serviced_ids:
-                continue  # пропускаем — уже обслужили вчера
-            if atm.get_risk_level(hours_ahead=24) in ('RED', 'YELLOW'):
-                urgent.append(atm)
-    # for cluster in clusters:
-    #     urgent = []
-    #     for atm in cluster:
-    #         horizon = 12 if atm.id in serviced_ids else 24
-    #         if atm.get_risk_level(hours_ahead=horizon) in ('RED', 'YELLOW'):
-    #             urgent.append(atm)
-                
+        # Оставляем только критические (RED и YELLOW), зелёные пропускаем
+        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]
         if len(urgent) < 2:
             route = list(urgent)
         else:
+            # Красные раньше жёлтых
             sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
-            route = trim_route_by_graph(route, G, atm_to_node)
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, use_graph=True))
-        for atm in route:
-            visited_today.add(atm.id)
 
-    return routes, critical_counts, times, visited_today
+    return routes, critical_counts, times
 
 
 def main():
@@ -171,6 +121,7 @@ def main():
     atms = load_atms_from_json(ATMS_FILE)
     print(f"Загружено банкоматов: {len(atms)}")
 
+    # Сохраняем исходное состояние (для сброса между днями)
     original_atms = []
     for atm in atms:
         original_atms.append(Atm(
@@ -188,11 +139,10 @@ def main():
         original_atms[-1].current_out = original_atms[-1].capacity_out
 
     result = []
-    serviced_ids = set()  # ← ДОБАВЛЕНО: множество обслуженных банкоматов
-
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
 
+        # Копируем исходное состояние для этого дня
         atms_copy = []
         for atm in original_atms:
             atms_copy.append(Atm(
@@ -209,10 +159,7 @@ def main():
             atms_copy[-1].current_in = 0
             atms_copy[-1].current_out = atms_copy[-1].capacity_out
 
-        day_routes, day_critical_counts, day_times, visited_today = build_one_day(
-            atms_copy, day, G, atm_to_node, serviced_ids
-        )
-        serviced_ids.update(visited_today)  # ← ДОБАВЛЕНО: запоминаем посещённых
+        day_routes, day_critical_counts, day_times = build_one_day(atms_copy, day)
 
         for car_index, (route, critical_count, total_time) in enumerate(
                 zip(day_routes, day_critical_counts, day_times), start=1):
@@ -222,7 +169,7 @@ def main():
                 'car': car_index,
                 'stops': stops,
                 'critical_count': critical_count,
-                'total_time': total_time
+                'total_time': total_time   # минуты, посчитано по дорогам
             })
 
     with open(ROUTES_FILE, 'w', encoding='utf-8') as f:
