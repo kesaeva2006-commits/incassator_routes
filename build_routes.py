@@ -105,7 +105,12 @@ def build_one_day(atms, day, serviced_ids=None):
     visited_today = set()  # запоминаем кого посетили сегодня
 
     for cluster in clusters:
-        urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=24) in ('RED', 'YELLOW')]
+        urgent = []
+        for atm in cluster:
+            horizon = 12 if atm.id in serviced_ids else 24
+            if atm.get_risk_level(hours_ahead=horizon) in ('RED', 'YELLOW'):
+                urgent.append(atm)
+                
         if len(urgent) < 2:
             route = list(urgent)
         else:
