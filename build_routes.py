@@ -71,11 +71,10 @@ def route_total_minutes(route, G, atm_to_node):
 
 def build_one_day(atms, day, G, atm_to_node):
     # 1. Обновляем уровни банкоматов до начала этого дня
-    hours_passed = 24 * (day - 1)
-    for atm in atms:
-        atm.current_in = 0
-        atm.current_out = atm.capacity_out
-        atm.update_levels(hours_passed)
+    
+    if day > 1:
+        for atm in atms:
+            atm.update_levels(24)
 
     # 2. Кластеризуем
     clusters = cluster_atms(atms, n_clusters=N_CARS)
