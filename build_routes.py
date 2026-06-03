@@ -1,5 +1,19 @@
 """
 build_routes.py — сборщик маршрутов для автоматической сборки в GitHub Actions.
+
+Берёт банкоматы из atms.json, делит на 5 групп (по машине), строит маршрут
+объезда в каждой группе на каждый из 3 дней и сохраняет в routes.json в формате,
+который читает generate_map.py и index.html:
+
+    [{"day": 1, "car": 1, "stops": [[lat, lon], ...], "critical_count": 5}, ...]
+
+Маршруты строятся функцией алгоритмиста nearest_neighbor_route в ТОЧНОМ режиме
+(use_graph=True): время между банкоматами рассчитывается по реальным дорогам
+Москвы через граф OSMnx и алгоритм Дейкстры. Требует наличия кэша карты
+moscow_graph.pkl на диске. Для запуска в GitHub Actions без локального кэша
+используйте use_graph=False — быстрый режим по географическому расстоянию.
+
+Запускается автоматически в GitHub Actions — локально запускать не нужно.
 """
 
 import json
@@ -11,10 +25,10 @@ DAYS = 3
 N_CARS = 5
 ATMS_FILE = 'atms.json'
 ROUTES_FILE = 'routes.json'
-WORKDAY_MINUTES = 480
 
 
 def load_atms_from_json(path):
+    """Читает atms.json и превращает каждую запись в объект Atm."""
     with open(path, encoding='utf-8') as f:
         data = json.load(f)
     atms = []
@@ -34,6 +48,7 @@ def load_atms_from_json(path):
 
 
 def get_priority(atm):
+    """Возвращает числовой приоритет для сортировки: 0 — RED, 1 — YELLOW, 2 — GREEN."""
     risk = atm.get_risk_level()
     if risk == 'RED':
         return 0
@@ -41,87 +56,72 @@ def get_priority(atm):
         return 1
     return 2
 
-
-def trim_route_by_graph(route, G, atm_to_node, service_time=15, reserve=30):
-    """Обрезает маршрут если превышает 8 часов по реальному времени."""
-    accumulated = reserve
-    for i, atm in enumerate(route):
-        if i > 0:
-            t_sec = travel_time_between(route[i-1], atm, G, atm_to_node)
-            if t_sec == float('inf'):
-                t_sec = 0
-            accumulated += t_sec / 60.0
-        accumulated += service_time
-        if accumulated > WORKDAY_MINUTES:
-            return route[:i]
-    return route
-
-
-def route_total_minutes(route, G, atm_to_node):
-    """Суммарное время маршрута в минутах по реальным дорогам."""
+def route_total_minutes(route, use_graph=True):
+    """Суммарное время прохождения готового маршрута, в минутах.
+    В графовом режиме берём реальное дорожное время (Дейкстра, секунды)."""
     if len(route) < 2:
         return 0.0
-    from route_utils import check_workday_limit
-    total_sec = 0.0
-    for a, b in zip(route, route[1:]):
-        t = travel_time_between(a, b, G, atm_to_node)
-        if t != float('inf'):
-            total_sec += t
-    travel_min = total_sec / 60.0
-    _, total = check_workday_limit(route, travel_time=travel_min)
-    return round(total, 1)
+    if use_graph:
+        from map_loader import load_moscow_graph
+        from node_matcher import match_atms_to_nodes
+        G = load_moscow_graph()
+        atm_to_node = match_atms_to_nodes(route)
+        total_sec = 0.0
+        for a, b in zip(route, route[1:]):
+            t = travel_time_between(a, b, G, atm_to_node)
+            if t != float('inf'):
+                total_sec += t
+        travel_min = total_sec / 60.0
+        from route_utils import check_workday_limit
+        _, total = check_workday_limit(route, travel_time=travel_min)
+        return round(total, 1)
+    else:
+        from route_utils import calculate_travel_time
+        return round(sum(calculate_travel_time(a, b)
+                         for a, b in zip(route, route[1:])), 1)
 
-
-def build_one_day(atms, day, G, match_atms_to_nodes):
-    """Строит маршруты для конкретного дня."""
-
-    # Обновляем уровни банкоматов до начала этого дня
+def build_one_day(atms, day):
+    """
+    Строит маршруты для конкретного дня.
+    Обновляет уровни банкоматов до этого дня, затем кластеризует,
+    отсеивает зелёные банкоматы и строит маршруты только для критических.
+    """
+    # 1. Обновляем уровни банкоматов до начала этого дня
     hours_passed = 24 * (day - 1)
     for atm in atms:
         atm.current_in = 0
         atm.current_out = atm.capacity_out
         atm.update_levels(hours_passed)
 
-    # Кластеризуем
+    # 2. Кластеризуем (делим на 5 групп по географической близости)
     clusters = cluster_atms(atms, n_clusters=N_CARS)
 
+    # 3. Для каждого кластера строим маршрут только из критических банкоматов
     routes = []
     critical_counts = []
     times = []
-
     for cluster in clusters:
+        # Оставляем только критические (RED и YELLOW), зелёные пропускаем
         urgent = [atm for atm in cluster if atm.get_risk_level(hours_ahead=24) in ('RED', 'YELLOW')]
-
         if len(urgent) < 2:
             route = list(urgent)
-            atm_to_node = match_atms_to_nodes(route, G=G) if route else {}
         else:
+            # Красные раньше жёлтых
             sorted_urgent = sorted(urgent, key=get_priority)
-            atm_to_node = match_atms_to_nodes(sorted_urgent, G=G)
-            route = nearest_neighbor_route(sorted_urgent, use_graph=True, G=G, atm_to_node=atm_to_node)
-            # Обрезаем маршрут если превышает 8 часов
-            route = trim_route_by_graph(route, G, atm_to_node)
-
+            route = nearest_neighbor_route(sorted_urgent, use_graph=True)
         routes.append(route)
         critical_counts.append(len(route))
-        atm_to_node_full = match_atms_to_nodes(route, G=G) if len(route) > 1 else {}
-        times.append(route_total_minutes(route, G, atm_to_node_full))
+        times.append(route_total_minutes(route, use_graph=True))
 
     return routes, critical_counts, times
 
 
 def main():
-    # Загружаем граф ОДИН РАЗ для всех дней и кластеров
-    from map_loader import load_moscow_graph
-    from node_matcher import match_atms_to_nodes
-
     print(f"Читаю банкоматы из {ATMS_FILE} ...")
     atms = load_atms_from_json(ATMS_FILE)
     print(f"Загружено банкоматов: {len(atms)}")
 
-    print("Загружаем граф дорог...")
-    G = load_moscow_graph()
-
+    # Сохраняем исходное состояние (для сброса между днями)
     original_atms = []
     for atm in atms:
         original_atms.append(Atm(
@@ -142,6 +142,7 @@ def main():
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
 
+        # Копируем исходное состояние для этого дня
         atms_copy = []
         for atm in original_atms:
             atms_copy.append(Atm(
@@ -158,9 +159,7 @@ def main():
             atms_copy[-1].current_in = 0
             atms_copy[-1].current_out = atms_copy[-1].capacity_out
 
-        day_routes, day_critical_counts, day_times = build_one_day(
-            atms_copy, day, G, match_atms_to_nodes
-        )
+        day_routes, day_critical_counts, day_times = build_one_day(atms_copy, day)
 
         for car_index, (route, critical_count, total_time) in enumerate(
                 zip(day_routes, day_critical_counts, day_times), start=1):
@@ -170,7 +169,7 @@ def main():
                 'car': car_index,
                 'stops': stops,
                 'critical_count': critical_count,
-                'total_time': total_time
+                'total_time': total_time   # минуты, посчитано по дорогам
             })
 
     with open(ROUTES_FILE, 'w', encoding='utf-8') as f:
