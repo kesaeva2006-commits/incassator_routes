@@ -86,12 +86,12 @@ def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
     routes = []
     critical_counts = []
     times = []
-    visited_today = []
+    visited_ids = {atm.id for atm in (prev_day_visited or [])}
 
     for cluster in clusters:
-        urgent = [atm for atm in cluster if atm.get_risk_level() in ('RED', 'YELLOW')]  # ← вернули hours_ahead=24
-        if len(urgent) < 2:
-            route = list(urgent)
+    urgent = [atm for atm in cluster 
+              if atm.get_risk_level() in ('RED', 'YELLOW')
+              and atm.id not in visited_ids]  # ← не объезжали вчера
         else:
             sorted_urgent = sorted(urgent, key=get_priority)
             sub_atm_to_node = {atm.id: atm_to_node[atm.id] for atm in sorted_urgent if atm.id in atm_to_node}
