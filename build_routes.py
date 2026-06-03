@@ -79,21 +79,42 @@ def route_total_minutes(route, use_graph=True):
         from route_utils import calculate_travel_time
         return round(sum(calculate_travel_time(a, b)
                          for a, b in zip(route, route[1:])), 1)
-
-def trim_route_by_graph(route, service_time=15, reserve=30):
-    """Обрезает маршрут если превышает 8 часов."""
-    from route_utils import calculate_travel_time
+        
+def trim_route_by_graph(route, G, atm_to_node, service_time=15, reserve=30):
+    from greedy_algorithm import build_time_matrix
     WORKDAY_MINUTES = 480
+    
+    if len(route) < 2:
+        return route
+    
+    sub_atm_to_node = {atm.id: atm_to_node[atm.id] for atm in route if atm.id in atm_to_node}
+    matrix = build_time_matrix(route, G, sub_atm_to_node)
+    
     accumulated = reserve
+    trimmed = []
     for i, atm in enumerate(route):
         if i > 0:
-            accumulated += calculate_travel_time(route[i-1], atm)
+            t = matrix.get((route[i-1].id, atm.id), 0) / 60
+            accumulated += t
         accumulated += service_time
         if accumulated > WORKDAY_MINUTES:
-            return route[:i]
-    return route
+            break
+        trimmed.append(atm)
+    return trimmed
+# def trim_route_by_graph(route, service_time=15, reserve=30):
+#     """Обрезает маршрут если превышает 8 часов."""
+#     from route_utils import calculate_travel_time
+#     WORKDAY_MINUTES = 480
+#     accumulated = reserve
+#     for i, atm in enumerate(route):
+#         if i > 0:
+#             accumulated += calculate_travel_time(route[i-1], atm)
+#         accumulated += service_time
+#         if accumulated > WORKDAY_MINUTES:
+#             return route[:i]
+#     return route
 
-def build_one_day(atms, day, serviced_ids=None):
+def build_one_day(atms, day, G, atm_to_node, serviced_ids=None):
     if serviced_ids is None:
         serviced_ids = set()
     
@@ -135,7 +156,7 @@ def build_one_day(atms, day, serviced_ids=None):
         else:
             sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
-            route = trim_route_by_graph(route)
+            route = trim_route_by_graph(route, G, atm_to_node)
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, use_graph=True))
@@ -189,7 +210,7 @@ def main():
             atms_copy[-1].current_out = atms_copy[-1].capacity_out
 
         day_routes, day_critical_counts, day_times, visited_today = build_one_day(
-            atms_copy, day, serviced_ids  # ← ИЗМЕНЕНО: передаём serviced_ids
+            atms_copy, day, G, atm_to_node, serviced_ids
         )
         serviced_ids.update(visited_today)  # ← ДОБАВЛЕНО: запоминаем посещённых
 
