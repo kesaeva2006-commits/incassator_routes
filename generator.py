@@ -36,9 +36,9 @@ def generate_atms(count: int = 10, seed: int = 42) -> list[Atm]:
         cap_out = random.randint(10000, 25000)  # выдача денег
 
         mean_in = random.uniform(80, 200)
-        std_in = random.uniform(8, 25)
+        std_in = random.uniform(8, 30)
         mean_out = random.uniform(70, 110)
-        std_out = random.uniform(8, 20)
+        std_out = random.uniform(8, 25)
 
         # Создаём объект банкомата
         atm = Atm(
