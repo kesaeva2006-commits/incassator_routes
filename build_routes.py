@@ -134,6 +134,7 @@ def main():
         day_routes, day_critical_counts, day_times, visited_prev = build_one_day(
             atms_live, day, G, atm_to_node, prev_day_visited=visited_prev
         )
+        print(f"  Объезжено сегодня: {len(visited_prev)} банкоматов, id первых 3: {[a.id for a in visited_prev[:3]]}")
 
         for car_index, (route, critical_count, total_time) in enumerate(
                 zip(day_routes, day_critical_counts, day_times), start=1):
