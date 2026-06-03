@@ -3,7 +3,7 @@ from atm import Atm
 from map_loader import load_moscow_graph
 
 
-def match_atms_to_nodes(atms: list[Atm]) -> dict[int, int]:
+def match_atms_to_nodes(atms: list[Atm], G=None) -> dict[int, int]:
     """
     Для каждого банкомата находит ближайший узел (перекрёсток) на карте дорог.
 
