@@ -50,41 +50,30 @@ def nearest_neighbor_route_matrix(atms, G, atm_to_node):
 
 
 def nearest_neighbor_route(atms: list[Atm], start_atm=None,
-                           use_graph: bool = True) -> list[Atm]:
-    """
-    Строит маршрут обхода банкоматов жадным алгоритмом.
-
-    use_graph=True — точный расчёт по дорогам через матрицу времён (OSMnx)
-    use_graph=False — быстрый расчёт по расстоянию (для CI)
-    """
+                           use_graph: bool = True, G=None, atm_to_node=None) -> list[Atm]:
     if not atms:
         return []
-
     if use_graph:
-        # Точный режим: загружаем граф один раз, строим матрицу, идём по ней
         from map_loader import load_moscow_graph
         from node_matcher import match_atms_to_nodes
-
-        G = load_moscow_graph()
-        atm_to_node = match_atms_to_nodes(atms)
+        if G is None:
+            G = load_moscow_graph()
+        if atm_to_node is None:
+            atm_to_node = match_atms_to_nodes(atms, G)
         return nearest_neighbor_route_matrix(atms, G, atm_to_node)
     else:
-        # Быстрый режим: без графа, по географическому расстоянию
         def time_to(current, candidate):
             return calculate_travel_time(current, candidate)
-
         unvisited = atms.copy()
         if start_atm:
             current = start_atm
             unvisited.remove(start_atm)
         else:
             current = unvisited.pop(0)
-
         route = [current]
         while unvisited:
             nearest = min(unvisited, key=lambda atm: time_to(current, atm))
             route.append(nearest)
             unvisited.remove(nearest)
             current = nearest
-
         return route
