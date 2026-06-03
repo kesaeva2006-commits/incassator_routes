@@ -80,6 +80,19 @@ def route_total_minutes(route, use_graph=True):
         return round(sum(calculate_travel_time(a, b)
                          for a, b in zip(route, route[1:])), 1)
 
+def trim_route_by_graph(route, service_time=15, reserve=30):
+    """Обрезает маршрут если превышает 8 часов."""
+    from route_utils import calculate_travel_time
+    WORKDAY_MINUTES = 480
+    accumulated = reserve
+    for i, atm in enumerate(route):
+        if i > 0:
+            accumulated += calculate_travel_time(route[i-1], atm)
+        accumulated += service_time
+        if accumulated > WORKDAY_MINUTES:
+            return route[:i]
+    return route
+
 def build_one_day(atms, day, serviced_ids=None):
     if serviced_ids is None:
         serviced_ids = set()
@@ -116,6 +129,7 @@ def build_one_day(atms, day, serviced_ids=None):
         else:
             sorted_urgent = sorted(urgent, key=get_priority)
             route = nearest_neighbor_route(sorted_urgent, use_graph=True)
+            route = trim_route_by_graph(route)
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, use_graph=True))
