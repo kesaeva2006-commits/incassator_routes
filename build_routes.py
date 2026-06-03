@@ -20,6 +20,7 @@ import json
 from atm import Atm
 from clustering import cluster_atms
 from greedy_algorithm import nearest_neighbor_route, travel_time_between
+from route_checker import check_all_routes, rebalance_clusters
 
 DAYS = 3
 N_CARS = 5
@@ -105,6 +106,15 @@ def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, G, atm_to_node))
+    
+    # 4. Проверяем маршруты на 8 часов и перераспределяем если нужно
+    check_result = check_all_routes(clusters, routes)
+    if check_result["over_limit"]:
+        clusters, routes, _ = rebalance_clusters(clusters, routes, check_result)
+        # Пересчитываем critical_counts и times после перебалансировки
+        critical_counts = [len(r) for r in routes]
+        times = [route_total_minutes(r, G, atm_to_node) for r in routes]
+        visited_today = [atm for route in routes for atm in route]
 
     return routes, critical_counts, times, visited_today
 
