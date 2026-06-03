@@ -121,31 +121,20 @@ def main():
     atms = load_atms_from_json(ATMS_FILE)
     print(f"Загружено банкоматов: {len(atms)}")
 
-    # Сохраняем исходное состояние (для сброса между днями)
-    original_atms = []
-    for atm in atms:
-        original_atms.append(Atm(
-            atm_id=atm.id,
-            lat=atm.lat,
-            lon=atm.lon,
-            capacity_in=atm.capacity_in,
-            capacity_out=atm.capacity_out,
-            mean_in=atm.mean_in,
-            std_in=atm.std_in,
-            mean_out=atm.mean_out,
-            std_out=atm.std_out,
-        ))
-        original_atms[-1].current_in = 0
-        original_atms[-1].current_out = original_atms[-1].capacity_out
+    # Создаём словарь банкоматов по id для быстрого доступа
+    atm_dict = {atm.id: atm for atm in atms}
+
+    # Множество id банкоматов которые уже обслужили
+    serviced_ids = set()
 
     result = []
     for day in range(1, DAYS + 1):
         print(f"Строю маршруты на день {day} ...")
 
-        # Копируем исходное состояние для этого дня
+        # Копируем банкоматы для этого дня
         atms_copy = []
-        for atm in original_atms:
-            atms_copy.append(Atm(
+        for atm in atms:
+            new_atm = Atm(
                 atm_id=atm.id,
                 lat=atm.lat,
                 lon=atm.lon,
@@ -155,11 +144,29 @@ def main():
                 std_in=atm.std_in,
                 mean_out=atm.mean_out,
                 std_out=atm.std_out,
-            ))
-            atms_copy[-1].current_in = 0
-            atms_copy[-1].current_out = atms_copy[-1].capacity_out
+            )
+            new_atm.current_in = 0
+            new_atm.current_out = new_atm.capacity_out
+
+            # Если банкомат уже обслужили — сбрасываем его уровни в ноль
+            # (инкассатор забрал деньги и пополнил бункер выдачи)
+            if atm.id in serviced_ids:
+                new_atm.current_in = 0
+                new_atm.current_out = new_atm.capacity_out
+                # Обновляем только за один день после обслуживания
+                new_atm.update_levels(24)
+            else:
+                # Не обслуженный — накапливается с самого начала
+                new_atm.update_levels(24 * (day - 1))
+
+            atms_copy.append(new_atm)
 
         day_routes, day_critical_counts, day_times = build_one_day(atms_copy, day)
+
+        # Запоминаем какие банкоматы обслужили сегодня
+        for route in day_routes:
+            for atm in route:
+                serviced_ids.add(atm.id)
 
         for car_index, (route, critical_count, total_time) in enumerate(
                 zip(day_routes, day_critical_counts, day_times), start=1):
@@ -169,7 +176,7 @@ def main():
                 'car': car_index,
                 'stops': stops,
                 'critical_count': critical_count,
-                'total_time': total_time   # минуты, посчитано по дорогам
+                'total_time': total_time
             })
 
     with open(ROUTES_FILE, 'w', encoding='utf-8') as f:
