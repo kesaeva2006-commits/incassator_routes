@@ -20,7 +20,7 @@ import json
 from atm import Atm
 from clustering import cluster_atms
 from greedy_algorithm import nearest_neighbor_route, travel_time_between
-from route_checker import check_all_routes, rebalance_clusters
+from route_utils import check_workday_limit, trim_route_by_time, calculate_travel_time
 
 DAYS = 3
 N_CARS = 5
@@ -102,19 +102,16 @@ def build_one_day(atms, day, G, atm_to_node, prev_day_visited=None):
             sub_atm_to_node = {atm.id: atm_to_node[atm.id] for atm in sorted_urgent if atm.id in atm_to_node}
             route = nearest_neighbor_route(sorted_urgent, use_graph=True, G=G, atm_to_node=sub_atm_to_node)
 
+        # Обрезаем маршрут если превышает 8 часов
+        if len(route) >= 2:
+            travel_times = [calculate_travel_time(route[j], route[j+1])
+                           for j in range(len(route)-1)]
+            route = trim_route_by_time(route, travel_times)
+
         visited_today.extend(route)
         routes.append(route)
         critical_counts.append(len(route))
         times.append(route_total_minutes(route, G, atm_to_node))
-    
-    # 4. Проверяем маршруты на 8 часов и перераспределяем если нужно
-    check_result = check_all_routes(clusters, routes)
-    if check_result["over_limit"]:
-        clusters, routes, _ = rebalance_clusters(clusters, routes, check_result)
-        # Пересчитываем critical_counts и times после перебалансировки
-        critical_counts = [len(r) for r in routes]
-        times = [route_total_minutes(r, G, atm_to_node) for r in routes]
-        visited_today = [atm for route in routes for atm in route]
 
     return routes, critical_counts, times, visited_today
 
