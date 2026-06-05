@@ -1,0 +1,78 @@
+name: Build routes and maps
+
+# Когда запускать робота:
+on:
+  workflow_dispatch:        # вручную — кнопкой "Run workflow" на вкладке Actions
+  push:
+    branches: [ "develop" ] # автоматически — при изменениях в develop
+
+# Разрешаем роботу записывать файлы обратно в репозиторий
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Скачиваем код репозитория
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # 2. Ставим Python (та же версия, что в тестах)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. Ставим зависимости (теперь включая osmnx для точного режима по дорогам)
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      # 3.1 Кэшируем граф Москвы между запусками Actions.
+      # Первый раз граф скачивается (~2-5 мин), сохраняется в moscow_graph.pkl.
+      # Все следующие запуски берут его из кэша — скачивания не будет.
+      - name: Cache Moscow graph
+        uses: actions/cache@v4
+        with:
+          path: moscow_graph.pkl
+          key: moscow-graph-v1
+
+      - name: Download graph from repo if not cached
+        run: |
+          if [ ! -f moscow_graph.pkl ]; then
+            curl -L -o moscow_graph.pkl \
+            "https://raw.githubusercontent.com/kesaeva2006-commits/incassator_routes/develop/moscow_graph.pkl"
+          fi
+
+      # 4.1 Новый шаг — генерируем банкоматы со статистикой
+      - name: Generate atms.json with statistics
+        run: python generate_atms_json.py
+
+      # 4.2 Собираем маршруты: atms.json -> routes.json
+      - name: Build routes.json
+        run: python build_routes.py
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      # 5. Генерируем карты по дням: routes.json -> map_day1/2/3.html (в templates/)
+      - name: Generate maps
+        run: python generate_map.py
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Copy routes.json to templates
+        run: cp routes.json templates/
+
+      # 6. Робот сам коммитит сгенерированные файлы обратно в репозиторий
+      - name: Commit generated files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add routes.json templates/map_day1.html templates/map_day2.html templates/map_day3.html templates/routes.json
+          git diff --staged --quiet || git commit -m "auto: пересборка routes.json и карт [skip ci]"
+          git push --force-with-lease
+

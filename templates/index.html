@@ -343,6 +343,47 @@
         z-index: 1;
     }
 
+    /* Кнопки переключения дней */
+    .day-tabs {
+        display: none;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 4px;
+    }
+
+    .day-tabs.show {
+        display: flex;
+    }
+
+    .day-btn {
+        background: #ffffff;
+        border: 1.5px solid #cfe3ec;
+        color: #1f779e;
+        padding: 10px 26px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .day-btn:hover {
+        border-color: #1f779e;
+        background: #f3f9fc;
+        transform: translateY(-2px);
+    }
+
+    .day-btn.active {
+        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 8px 18px -6px rgba(26, 95, 122, 0.5);
+    }
+
     /* Футер */
     .footer {
         margin-top: 32px;
@@ -392,73 +433,140 @@
                 <span class="critical-dot"></span>
                 Критических банкоматов: 3 - требуется срочный объезд
             </div>
+</div>
+        
+        <div class="day-tabs" id="dayTabs">
+            <button class="day-btn active" data-day="1">День 1</button>
+            <button class="day-btn" data-day="2">День 2</button>
+            <button class="day-btn" data-day="3">День 3</button>
+            <button class="day-btn" id="btnStats">Статистика</button>
+        </div>
+
+        <div id="statsOverlay" style="display:none; position:fixed; inset:0;
+             background:rgba(10,47,63,0.45); z-index:2000;
+             justify-content:center; align-items:center;">
+          <div style="background:#fff; border-radius:20px; padding:30px 34px;
+               max-width:420px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+            <div class="result-title">Статистика — день <span id="statsDay">1</span></div>
+            <div id="statsBody"></div>
+            <button class="day-btn active" style="margin-top:18px;"
+               onclick="document.getElementById('statsOverlay').style.display='none'">Закрыть</button>
+          </div>
         </div>
         
         <div class="map-area" id="mapArea">
-            <iframe src="map.html" width="100%" height="400px" style="border: none; border-radius: 16px;"></iframe>
+            <iframe src="map_day1.html" id="mapFrame" width="100%" height="400px" style="border: none; border-radius: 16px;"></iframe>
         </div>
         
         <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
     </div>
 
 <script>
-    document.getElementById('btnBuildRoute').addEventListener('click', function() {
-        // Показываем блоки
-        document.getElementById('resultBox').classList.add('show');
-        document.getElementById('mapArea').classList.add('show');
-        this.textContent = 'Обновить маршрут';
-        
-        // Загружаем данные
-        loadRoutes(1);
-    });
+    // Адрес бэкенда – тот же, что загрузил страницу
+const API_BASE = window.location.origin;
 
-    // Функция для загрузки данных с сервера
-    async function loadRoutes(day) {
-        // Показываем индикатор загрузки
-        document.getElementById('resultBox').innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
-        
-        try {
-            const response = await fetch(`/routes?day=${day}`);
-            const routes = await response.json();
-            
-            // Строим HTML с реальными данными
-            let html = '<div class="result-title">Построенные маршруты</div>';
-            routes.forEach(route => {
-                html += `<div class="result-item">
-                    <span class="result-icon">🚗</span>
-                    <span><strong>Машина ${route.group_id}</strong> — ${route.stops.length} банкоматов, ${Math.round(route.total_time / 60)} ч ${route.total_time % 60} мин</span>
-                </div>`;
-            });
-            document.getElementById('resultBox').innerHTML = html;
-        } catch (error) {
-            // Если сервер недоступен — показываем демо-данные
-            document.getElementById('resultBox').innerHTML = `
-                <div class="result-title">Построенные маршруты</div>
-                <div class="result-item"><span class="result-icon">🚗</span><span><strong>Машина 1</strong> — 18 банкоматов, 7 ч 20 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚙</span><span><strong>Машина 2</strong> — 15 банкоматов, 6 ч 50 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚐</span><span><strong>Машина 3</strong> — 20 банкоматов, 7 ч 45 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚛</span><span><strong>Машина 4</strong> — 17 банкоматов, 7 ч 10 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚎</span><span><strong>Машина 5</strong> — 16 банкоматов, 6 ч 55 мин</span></div>
-                <div class="critical-alert">
-                    <span class="critical-dot"></span>
-                    Критических банкоматов: 3 - требуется срочный объезд
-                </div>
-            `;
-        }
-    }
-    // Функция для загрузки банкоматов с сервера
-async function loadAtms() {
-    try {
-        const response = await fetch('/atms');
-        const atms = await response.json();
-        console.log('Загружено банкоматов:', atms.length);
-        return atms;
-    } catch (error) {
-        console.log('Сервер недоступен, банкоматы загружаются из map.html');
-        return [];
+function showLoader() {
+    const resultBox = document.getElementById('resultBox');
+    if (resultBox) {
+        resultBox.innerHTML = '<div style="text-align:center; color:#279ed1;">Загрузка маршрутов...</div>';
+        resultBox.classList.add('show');
     }
 }
-</script>
+
+function displayRoutes(routes) {
+    const resultBox = document.getElementById('resultBox');
+    if (!resultBox) return;
+
+    let html = '<div class="result-title">Построенные маршруты</div>';
+    routes.forEach(route => {
+        const hours = Math.floor(route.total_time / 60);
+        const minutes = route.total_time % 60;
+        html += `
+            <div class="result-item">
+                <span class="result-icon">🚗</span>
+                <span><strong>Машина ${route.group_id}</strong> — ${route.stops.length} банкоматов, ${hours} ч ${minutes} мин</span>
+            </div>
+        `;
+    });
+    const totalCritical = routes.reduce((sum, r) => sum + (r.critical_count || 0), 0);
+    if (totalCritical > 0) {
+        html += `
+            <div class="critical-alert">
+                <span class="critical-dot"></span>
+                Критических банкоматов: ${totalCritical} — требуется срочный объезд
+            </div>
+        `;
+    }
+    resultBox.innerHTML = html;
+    resultBox.classList.add('show');
+}
+
+async function loadRoutesForDay(day) {
+    showLoader();
+    try {
+        const response = await fetch(`${API_BASE}/routes?day=${day}`);
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        const routes = await response.json();
+        displayRoutes(routes);
+        const mapFrame = document.getElementById('mapFrame');
+        if (mapFrame) {
+            mapFrame.src = `/templates/map_day${day}.html`;
+            document.getElementById('mapArea')?.classList.add('show');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки маршрутов:', error);
+        const resultBox = document.getElementById('resultBox');
+        if (resultBox) {
+            resultBox.innerHTML = '<div style="color:red;">Не удалось загрузить маршруты. Запустите сервер и проверьте БД.</div>';
+            resultBox.classList.add('show');
+        }
+    }
+}
+// Функция для загрузки статистики по банкоматам (эндпоинт /atms)
+async function loadAtmsStats() {
+    try {
+        const response = await fetch('/atms');
+        if (!response.ok) throw new Error(`Ошибка HTTP: ${response.status}`);
+        const atms = await response.json();
+        
+        const counts = {
+            red: atms.filter(atm => atm.status === 'red').length,
+            yellow: atms.filter(atm => atm.status === 'yellow').length,
+            green: atms.filter(atm => atm.status === 'green').length
+        };
+        
+        console.log('Статистика банкоматов (из /atms):', counts);
+        
+        // Если на странице есть блок для статистики, можно обновить его
+        const statsContainer = document.getElementById('atmsStats');
+        if (statsContainer) {
+            statsContainer.innerHTML = `
+                <div class="result-item"><span class="result-icon">🔴</span><span>Критических (RED): <strong>${counts.red}</strong></span></div>
+                <div class="result-item"><span class="result-icon">🟡</span><span>Внимание (YELLOW): <strong>${counts.yellow}</strong></span></div>
+                <div class="result-item"><span class="result-icon">🟢</span><span>Норма (GREEN): <strong>${counts.green}</strong></span></div>
+            `;
+        }
+        return counts;
+    } catch (error) {
+        console.error('Ошибка загрузки /atms:', error);
+        return null;
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const buildBtn = document.getElementById('btnBuildRoute');
+    if (buildBtn) buildBtn.addEventListener('click', () => loadRoutesForDay(1));
+   
+    const day1Btn = document.getElementById('day1Btn');
+    if (day1Btn) day1Btn.addEventListener('click', () => loadRoutesForDay(1));
+    const day2Btn = document.getElementById('day2Btn');
+    if (day2Btn) day2Btn.addEventListener('click', () => loadRoutesForDay(2));
+    const day3Btn = document.getElementById('day3Btn');
+    if (day3Btn) day3Btn.addEventListener('click', () => loadRoutesForDay(3));
+
+    // Вызов второго эндпоинта
+    loadAtmsStats();
+});
+    </script>
 
 </body>
 </html>

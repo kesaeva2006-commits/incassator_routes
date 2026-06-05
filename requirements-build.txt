@@ -1,0 +1,7 @@
+# Лёгкие зависимости для автосборки в GitHub Actions.
+folium>=0.14.0
+numpy>=1.21.0
+scikit-learn>=1.0.0
+networkx>=2.6.0
+requests>=2.25.0
+osmnx>=1.3.0

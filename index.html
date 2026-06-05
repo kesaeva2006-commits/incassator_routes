@@ -4,414 +4,796 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Инкассаторские маршруты - Москва</title>
-    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🚗</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Montserrat', sans-serif;
-        min-height: 100vh;
-        /* Более глубокий, сложный градиент: от глубокого синего к воздушному серо-голубому */
-        background: linear-gradient(165deg, #0b4566 0%, #154f6c 30%, #2e8ab8 70%, #a3c9db 100%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-    }
-
-    /* Декоративные круги */
-    body::before {
-        content: '';
-        position: fixed;
-        top: -200px;
-        right: -150px;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(180, 220, 225, 0.15) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: '';
-        position: fixed;
-        bottom: -180px;
-        left: -120px;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(46, 138, 184, 0.1) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
-    /* Основной контейнер */
-    .main-container {
-        background: rgba(255, 255, 255, 0.96); /* Чуть больше прозрачности для мягкости */
-        border-radius: 32px; /* Более плавные углы */
-        box-shadow: 
-            0 25px 50px -12px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.6);
-        padding: 55px 50px 45px;
-        max-width: 680px;
-        width: 100%;
-        text-align: center;
-        position: relative;
-        z-index: 1;
-        backdrop-filter: blur(12px);
-        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.2), box-shadow 0.4s ease;
-    }
-
-    .main-container:hover {
-        transform: translateY(-5px);
-        box-shadow: 
-            0 35px 60px -15px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.8);
-    }
-
-    /* Акцентная полоска сверху */
-    .accent-line {
-        position: absolute;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 70px; /* чуть шире */
-        height: 4px;
-        background: linear-gradient(90deg, #9adfd0, #6bc0d4, #4a9eb5);
-        border-radius: 0 0 5px 5px;
-        opacity: 0.9;
-    }
-
-    /* Иконка */
-    .icon {
-        font-size: 52px;
-        margin-bottom: 20px;
-        display: inline-block;
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
-    }
-
-    /* Заголовок */
-    h1 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 44px;
-        font-weight: 600; /* 600 выглядит изящнее, чем 700 */
-        color: #0a2f3f;
-        letter-spacing: 1.5px;
-        margin-bottom: 8px;
-        line-height: 1.15;
-    }
-
-    /* Разделитель */
-    .title-divider {
-        width: 50px;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #8cc9c7, #4a9eb5, #8cc9c7, transparent);
-        margin: 18px auto 14px;
-        border-radius: 1px;
-    }
-
-    /* Подзаголовок */
-    .subtitle {
-        font-size: 13px;
-        font-weight: 400;
-        color: #6b8899;
-        margin-bottom: 36px;
-        letter-spacing: 2.5px;
-        text-transform: uppercase;
-    }
-
-    /* Кнопка */
-    .build-button {
-        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
-        border: none;
-        color: #ffffff;
-        padding: 17px 52px;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        border-radius: 50px;
-        letter-spacing: 2.5px;
-        text-transform: uppercase;
-        box-shadow: 0 10px 25px -5px rgba(26, 95, 122, 0.4);
-        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        margin-bottom: 32px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* Эффект блика на кнопке */
-    .build-button::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        transition: width 0.7s, height 0.7s;
-    }
-
-    .build-button:hover::after {
-        width: 350px;
-        height: 350px;
-    }
-
-    .build-button:hover {
-        background: linear-gradient(135deg, #2c3e50 0%, #1a2d3b 100%);
-        box-shadow: 0 15px 30px -6px rgba(20, 40, 55, 0.5);
-        transform: translateY(-3px);
-        letter-spacing: 3.5px;
-    }
-
-    .build-button:active {
-        transform: translateY(0);
-        box-shadow: 0 5px 15px rgba(26, 95, 122, 0.4);
-        transition: all 0.1s ease;
-    }
-
-    /* Блок с результатом */
-    .result-box {
-        display: none;
-        background: #ffffff;
-        border: 1px solid #e7f0f4;
-        border-radius: 20px;
-        padding: 28px 32px;
-        margin-top: 5px;
-        text-align: left;
-        animation: fadeSlideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        box-shadow: 0 8px 20px rgba(0, 40, 60, 0.04);
-    }
-
-    .result-box.show {
-        display: block;
-    }
-
-    @keyframes fadeSlideIn {
-        from { 
-            opacity: 0; 
-            transform: translateY(20px); 
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        to { 
-            opacity: 1; 
-            transform: translateY(0); 
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(165deg, #0b4566 0%, #154f6c 30%, #2e8ab8 70%, #a3c9db 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
         }
-    }
+
+            body::before, body::after {
+                content: '';
+                position: fixed;
+                border-radius: 50%;
+                pointer-events: none;
+            }
+
+            body::before {
+                top: -200px;
+                right: -150px;
+                width: 600px;
+                height: 600px;
+                background: radial-gradient(circle, rgba(180, 220, 225, 0.15) 0%, transparent 70%);
+            }
+
+            body::after {
+                bottom: -180px;
+                left: -120px;
+                width: 500px;
+                height: 500px;
+                background: radial-gradient(circle, rgba(46, 138, 184, 0.1) 0%, transparent 70%);
+            }
+
+        .particles-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle-car {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.12;
+            animation: driveCar linear infinite;
+        }
+
+        @keyframes driveCar {
+            0% {
+                transform: translateX(-100px);
+            }
+
+            100% {
+                transform: translateX(calc(100vw + 100px));
+            }
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            padding: 40px 40px 35px;
+            max-width: 680px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .accent-line {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 4px;
+            background: linear-gradient(90deg, #9adfd0, #6bc0d4, #4a9eb5);
+            border-radius: 0 0 5px 5px;
+        }
+
+        .icon {
+            font-size: 52px;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 44px;
+            font-weight: 600;
+            color: #0a2f3f;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .title-divider {
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8cc9c7, #4a9eb5, #8cc9c7, transparent);
+            margin: 15px auto 12px;
+            border-radius: 1px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #6b8899;
+            margin-bottom: 28px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+        }
+
+        .build-button {
+            background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
+            border: none;
+            color: #ffffff;
+            padding: 15px 45px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 50px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            box-shadow: 0 10px 25px -5px rgba(26, 95, 122, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .build-button:hover {
+                background: #2c3e50;
+                transform: translateY(-2px);
+            }
+
+            .build-button:active {
+                transform: translateY(0);
+            }
+
+        .result-box {
+            display: none;
+            background: #ffffff;
+            border: 1px solid #e7f0f4;
+            border-radius: 20px;
+            padding: 24px 28px;
+            margin-top: 5px;
+            text-align: left;
+            animation: fadeSlideIn 0.5s ease;
+            box-shadow: 0 8px 20px rgba(0, 40, 60, 0.04);
+        }
+
+            .result-box.show {
+                display: block;
+            }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
         .result-title {
             font-family: 'Montserrat', sans-serif;
             font-size: 14px;
             font-weight: 600;
             color: #0a3d52;
-            margin-bottom: 16px;
-            padding-bottom: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #e8f0f4;
             letter-spacing: 0.5px;
         }
 
-    .result-item {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 11px 6px;
-        border-bottom: 1px solid #f4f8fb;
-        font-size: 14px;
-        font-weight: 400;
-        color: #2d5569;
-        transition: background 0.2s ease, padding-left 0.2s ease;
-        border-radius: 8px;
-        margin-bottom: 2px;
-    }
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 4px;
+            border-bottom: 1px solid #f4f8fb;
+            font-size: 14px;
+            color: #2d5569;
+            transition: background 0.2s;
+            border-radius: 8px;
+        }
 
-    .result-item:hover {
-        background: #f8fbfd;
-        padding-left: 12px;
-    }
+            .result-item:hover {
+                background: #f8fbfd;
+                padding-left: 10px;
+            }
 
-    .result-item:last-of-type {
-        border-bottom: 1px solid #f4f8fb;
-        margin-bottom: 0;
-    }
+            .result-item:last-of-type {
+                border-bottom: none;
+            }
 
-    .result-icon {
-        font-size: 22px;
-        width: 30px;
-        text-align: center;
-        opacity: 0.8;
-    }
+        .result-icon {
+            font-size: 22px;
+            width: 30px;
+            text-align: center;
+            opacity: 0.8;
+        }
 
-    .result-item strong {
-        font-weight: 600;
-        color: #0e3b4d;
-    }
+        .result-item strong {
+            font-weight: 600;
+            color: #0e3b4d;
+        }
 
-    /* Критические банкоматы */
-    .critical-alert {
-        margin-top: 18px;
-        padding: 14px 18px;
-        background: #fefaf7;
-        border-radius: 12px;
-        border-left: 4px solid #cc6b4d; /* приглушенный коралловый вместо ярко-красного */
-        font-size: 13px;
-        font-weight: 500;
-        color: #8b422a;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: background 0.2s ease;
-    }
+        .critical-alert {
+            margin-top: 14px;
+            padding: 12px 16px;
+            background: #fefaf7;
+            border-radius: 12px;
+            border-left: 4px solid #cc6b4d;
+            font-size: 13px;
+            font-weight: 500;
+            color: #8b422a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    .critical-alert:hover {
-        background: #fef5f1;
-    }
+        .critical-dot {
+            width: 9px;
+            height: 9px;
+            background: #cc6b4d;
+            border-radius: 50%;
+            flex-shrink: 0;
+            animation: pulse 2.2s ease-in-out infinite;
+        }
 
-    .critical-dot {
-        width: 9px;
-        height: 9px;
-        background: #cc6b4d;
-        border-radius: 50%;
-        flex-shrink: 0;
-        animation: pulse 2.2s ease-in-out infinite;
-        box-shadow: 0 0 0 2px rgba(204, 107, 77, 0.2);
-    }
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.9;
+                transform: scale(1);
+            }
 
-    @keyframes pulse {
-        0%, 100% { opacity: 0.9; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.5); }
-    }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.5);
+            }
+        }
 
-    /* Блок с картой */
-    .map-area {
-        display: none;
-        margin-top: 24px;
-        border-radius: 20px;
-        overflow: hidden;
-        border: 2px solid #e1eef4;
-        animation: fadeSlideIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-        box-shadow: 0 6px 22px rgba(0, 40, 60, 0.05);
-    }
+        .map-area {
+            display: none;
+            margin-top: 20px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #e1eef4;
+            animation: fadeSlideIn 0.55s ease;
+        }
 
-    .map-area.show {
-        display: block;
-    }
+            .map-area.show {
+                display: block;
+            }
 
-    .map-placeholder {
-        background: #fafdfe;
-        height: 280px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: #598395;
-        font-size: 15px;
-        font-weight: 400;
-        position: relative;
-    }
+            .map-area iframe {
+                width: 100%;
+                height: 400px;
+                border: none;
+                border-radius: 16px;
+            }
 
-    /* Сетка на плейсхолдере карты */
-    .map-placeholder::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: 
-            linear-gradient(rgba(140, 190, 200, 0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(140, 190, 200, 0.06) 1px, transparent 1px);
-        background-size: 24px 24px;
-        pointer-events: none;
-    }
+        .day-tabs {
+            display: none;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
 
-    .map-placeholder .map-icon {
-        font-size: 52px;
-        margin-bottom: 16px;
-        opacity: 0.65;
-        position: relative;
-        z-index: 1;
-    }
+            .day-tabs.show {
+                display: flex;
+            }
 
-    .map-placeholder p {
-        position: relative;
-        z-index: 1;
-    }
+        .day-btn {
+            background: #ffffff;
+            border: 1.5px solid #cfe3ec;
+            color: #1f779e;
+            padding: 10px 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-    /* Футер */
-    .footer {
-        margin-top: 32px;
-        font-size: 11px;
-        font-weight: 400;
-        color: #8aaebb;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        opacity: 0.9;
-    }
-</style>
+            .day-btn:hover {
+                border-color: #1f779e;
+                background: #f3f9fc;
+            }
+
+            .day-btn.active {
+                background: #1f779e;
+                color: #ffffff;
+                border-color: transparent;
+            }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #8aaebb;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .game-block {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.6);
+            padding: 25px 30px;
+            max-width: 680px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-block-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #0a3d52;
+            margin-bottom: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(180deg, #f0f7fa 0%, #e8f0f4 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #d0e0e8;
+        }
+
+        .game-road {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: repeating-linear-gradient(90deg, #8aaebb 0px, #8aaebb 20px, transparent 20px, transparent 40px);
+        }
+
+            .game-road.moving {
+                animation: roadMove 0.6s linear infinite;
+            }
+
+        @keyframes roadMove {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(40px);
+            }
+        }
+
+        .game-car-jump {
+            position: absolute;
+            bottom: 35px;
+            right: 50px;
+            font-size: 36px;
+            transition: bottom 0.15s ease-out;
+            z-index: 10;
+        }
+
+            .game-car-jump.jumping {
+                bottom: 75px;
+            }
+
+        .game-obstacle {
+            position: absolute;
+            bottom: 38px;
+            left: -40px;
+            font-size: 30px;
+            z-index: 5;
+        }
+
+            .game-obstacle.moving {
+                animation: obstacleMove 2.2s linear infinite;
+            }
+
+        @keyframes obstacleMove {
+            0% {
+                left: -40px;
+            }
+
+            100% {
+                left: calc(100% + 40px);
+            }
+        }
+
+        .game-score {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f779e;
+            z-index: 10;
+        }
+
+        .game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #cc6b4d;
+            z-index: 20;
+            background: rgba(255,255,255,0.95);
+            padding: 8px 18px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .game-btn {
+            background: #ffffff;
+            border: 1.5px solid #cfe3ec;
+            color: #1f779e;
+            padding: 8px 22px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .game-btn:hover {
+                background: #1f779e;
+                color: #ffffff;
+            }
+
+            .game-btn.playing {
+                background: #cc6b4d;
+                color: #ffffff;
+            }
+
+        .game-hint {
+            font-size: 10px;
+            color: #8aaebb;
+            margin-top: 10px;
+        }
+
+        .snake-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(180deg, #0a2f3f 0%, #0d3d52 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #1a4d63;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .snake-canvas {
+            display: block;
+            border-radius: 8px;
+        }
+
+        .snake-score {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6bc0d4;
+            margin-bottom: 10px;
+        }
+
+        .snake-overlay {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            z-index: 20;
+            background: rgba(0,0,0,0.8);
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body>
+
+    <div class="particles-container" id="particlesContainer"></div>
 
     <div class="main-container">
         <div class="accent-line"></div>
         <div class="icon">🚚</div>
         <h1>Маршруты инкассаторов</h1>
         <div class="title-divider"></div>
-        <p class="subtitle">Москва &nbsp;·&nbsp; 1000 банкоматов &nbsp;·&nbsp; 5 машин</p>
-        
+        <p class="subtitle">Москва · 1000 банкоматов · 5 машин</p>
+
         <button class="build-button" id="btnBuildRoute">Построить маршрут</button>
-        
-        <div class="result-box" id="resultBox">
-            <div class="result-title">Построенные маршруты</div>
-            <div class="result-item">
-                <span class="result-icon">🚗</span>
-                <span><strong>Машина 1</strong> &nbsp;-&nbsp; 18 банкоматов, 7 ч 20 мин</span>
-            </div>
-            <div class="result-item">
-                <span class="result-icon">🚙</span>
-                <span><strong>Машина 2</strong> &nbsp;-&nbsp; 15 банкоматов, 6 ч 50 мин</span>
-            </div>
-            <div class="result-item">
-                <span class="result-icon">🚐</span>
-                <span><strong>Машина 3</strong> &nbsp;-&nbsp; 20 банкоматов, 7 ч 45 мин</span>
-            </div>
-            <div class="result-item">
-                <span class="result-icon">🚛</span>
-                <span><strong>Машина 4</strong> &nbsp;-&nbsp; 17 банкоматов, 7 ч 10 мин</span>
-            </div>
-            <div class="result-item">
-                <span class="result-icon">🚎</span>
-                <span><strong>Машина 5</strong> &nbsp;-&nbsp; 16 банкоматов, 6 ч 55 мин</span>
-            </div>
-            <div class="critical-alert">
-                <span class="critical-dot"></span>
-                Критических банкоматов: 3 - требуется срочный объезд
+        <div class="result-box" id="resultBox"></div>
+
+        <div class="day-tabs" id="dayTabs">
+            <button class="day-btn active" data-day="1">День 1</button>
+            <button class="day-btn" data-day="2">День 2</button>
+            <button class="day-btn" data-day="3">День 3</button>
+            <button class="day-btn" id="btnStats">Статистика</button>
+        </div>
+
+        <div id="statsOverlay" style="display:none; position:fixed; inset:0; background:rgba(10,47,63,0.45); z-index:2000; justify-content:center; align-items:center;">
+            <div style="background:#fff; border-radius:20px; padding:30px 34px; max-width:420px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+                <div class="result-title">Статистика — день <span id="statsDay">1</span></div>
+                <div id="statsBody"></div>
+                <button class="day-btn active" style="margin-top:18px;" onclick="document.getElementById('statsOverlay').style.display='none'">Закрыть</button>
             </div>
         </div>
-        
+
         <div class="map-area" id="mapArea">
-            <div class="map-placeholder">
-                <div class="map-icon">🗺️</div>
-                <p>Интерактивная карта маршрутов</p>
-                <p style="font-size: 13px; margin-top: 6px; color: #89aab8;">с цветными линиями и статусами банкоматов</p>
-            </div>
+            <iframe src="/map_day1" id="mapFrame"></iframe>
         </div>
-        
-        <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
+
+        <p class="footer">РЭУ им. Г. В. Плеханова · 2026</p>
+    </div>
+
+    <div class="game-block">
+        <div class="game-block-title">а динозаврик придёт?</div>
+        <div class="snake-score">🏧 Перепрыгнуто <span id="gameScore">0</span></div>
+        <div class="game-container" id="gameContainer">
+            <div class="game-road" id="gameRoad"></div>
+            <div class="game-car-jump" id="gameCar">🚚</div>
+            <div class="game-obstacle" id="gameObstacle">🏧</div>
+            <div class="game-over" id="gameOver">💥 Ты банкомат сломал...</div>
+        </div>
+        <div class="game-controls"><button class="game-btn" id="btnJumpGame">▶ Играть</button></div>
+        <div class="game-hint">Пробел или клик по полю - прыжок</div>
+    </div>
+
+    <div class="game-block">
+        <div class="game-block-title">змейка уже не та</div>
+        <div class="snake-score">🏧 Собрано <span id="snakeScore">0</span></div>
+        <div class="snake-container" id="snakeContainer">
+            <canvas class="snake-canvas" id="snakeCanvas" width="580" height="380"></canvas>
+            <div class="snake-overlay" id="snakeOverlay">В следующий раз больше собери, ладно?<br>Сейчас собрано <span id="snakeFinalScore">0</span></div>
+        </div>
+        <div class="game-controls"><button class="game-btn" id="btnSnakeGame">▶ Играть</button></div>
+        <div class="game-hint">Стрелки ← → ↑ ↓ для управления машиной</div>
     </div>
 
     <script>
-        document.getElementById('btnBuildRoute').addEventListener('click', function() {
+        // Плавающие машинки
+        (function () {
+            const container = document.getElementById('particlesContainer');
+            const emojis = ['🚗', '🚙', '🚐', '🚛', '🚎'];
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('span');
+                p.className = 'particle-car';
+                p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                p.style.top = (Math.random() * 80 + 10) + '%';
+                p.style.animationDuration = (Math.random() * 20 + 15) + 's';
+                p.style.animationDelay = (Math.random() * 15) + 's';
+                container.appendChild(p);
+            }
+        })();
+
+        // Игра "Прыжки"
+        (function () {
+            const car = document.getElementById('gameCar');
+            const obstacle = document.getElementById('gameObstacle');
+            const road = document.getElementById('gameRoad');
+            const scoreEl = document.getElementById('gameScore');
+            const overEl = document.getElementById('gameOver');
+            const container = document.getElementById('gameContainer');
+            const btn = document.getElementById('btnJumpGame');
+            let score = 0, jumping = false, over = false, playing = false, interval, passed = false;
+            function jump() { if (jumping || over || !playing) return; jumping = true; passed = false; car.classList.add('jumping'); setTimeout(() => { car.classList.remove('jumping'); jumping = false; }, 450); }
+            function check() {
+                if (over || !playing) return;
+                const cr = car.getBoundingClientRect(), or = obstacle.getBoundingClientRect();
+                if (!passed && or.left > cr.right) { passed = true; score++; scoreEl.textContent = score; }
+                if (or.right - 12 > cr.left + 12 && or.left + 12 < cr.right - 12 && cr.bottom - 12 > or.top + 12) { over = true; overEl.style.display = 'block'; obstacle.classList.remove('moving'); road.classList.remove('moving'); clearInterval(interval); btn.textContent = '▶ Играть'; btn.classList.remove('playing'); playing = false; }
+            }
+            function start() {
+                if (over) { score = 0; scoreEl.textContent = '0'; }
+                over = false; jumping = false; passed = false; car.classList.remove('jumping'); overEl.style.display = 'none';
+                playing = true; btn.textContent = '⏹ Стоп'; btn.classList.add('playing');
+                obstacle.classList.add('moving'); road.classList.add('moving'); interval = setInterval(check, 20);
+            }
+            function pause() { obstacle.classList.remove('moving'); road.classList.remove('moving'); clearInterval(interval); btn.textContent = '▶ Играть'; btn.classList.remove('playing'); playing = false; }
+            btn.addEventListener('click', () => { if (playing) { over ? start() : pause(); } else start(); });
+            document.addEventListener('keydown', e => { if (e.code === 'Space' && playing) { e.preventDefault(); over ? start() : jump(); } });
+            container.addEventListener('click', () => { if (playing) { over ? start() : jump(); } });
+        })();
+
+        // Игра "Змейка"
+        (function () {
+            const canvas = document.getElementById('snakeCanvas'), ctx = canvas.getContext('2d');
+            const scoreEl = document.getElementById('snakeScore'), finalEl = document.getElementById('snakeFinalScore');
+            const overlay = document.getElementById('snakeOverlay'), btn = document.getElementById('btnSnakeGame');
+            const container = document.getElementById('snakeContainer');
+            const grid = 20;
+            let snake, food, dir, next, score, loop, playing, speed;
+            function resize() { const r = container.getBoundingClientRect(); canvas.width = r.width - 4; canvas.height = r.height - 4; }
+            resize(); window.addEventListener('resize', resize);
+            function init() {
+                const cols = Math.floor(canvas.width / grid), rows = Math.floor(canvas.height / grid);
+                snake = [{ x: Math.floor(cols / 2), y: Math.floor(rows / 2) }, { x: Math.floor(cols / 2) - 1, y: Math.floor(rows / 2) }, { x: Math.floor(cols / 2) - 2, y: Math.floor(rows / 2) }];
+                dir = 'right'; next = 'right'; score = 0; speed = 200; scoreEl.textContent = '0';
+                do { food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) }; } while (snake.some(s => s.x === food.x && s.y === food.y));
+            }
+            function update() {
+                dir = next; const head = { ...snake[0] };
+                switch (dir) { case 'right': head.x++; break; case 'left': head.x--; break; case 'up': head.y--; break; case 'down': head.y++; break; }
+                const cols = Math.floor(canvas.width / grid), rows = Math.floor(canvas.height / grid);
+                if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows || snake.some(s => s.x === head.x && s.y === head.y)) { end(); return; }
+                snake.unshift(head);
+                if (head.x === food.x && head.y === food.y) { score++; scoreEl.textContent = score; do { food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) }; } while (snake.some(s => s.x === food.x && s.y === food.y)); if (speed > 100) speed -= 5; clearInterval(loop); loop = setInterval(update, speed); }
+                else { snake.pop(); }
+                draw();
+            }
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = 'rgba(140, 190, 200, 0.06)'; ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += grid) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+                for (let y = 0; y < canvas.height; y += grid) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+                snake.forEach((s, i) => {
+                    const x = s.x * grid, y = s.y * grid;
+                    ctx.font = `${grid - 2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    if (i === 0) { ctx.save(); ctx.translate(x + grid / 2, y + grid / 2); if (dir === 'right') ctx.scale(-1, 1); else if (dir === 'up') { ctx.rotate(-Math.PI / 2); ctx.scale(-1, 1); } else if (dir === 'down') { ctx.rotate(Math.PI / 2); ctx.scale(-1, 1); } ctx.fillText('🚚', 0, 0); ctx.restore(); }
+                    else { ctx.fillText('💰', x + grid / 2, y + grid / 2); }
+                });
+                ctx.font = `${grid - 2}px serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('🏧', food.x * grid + grid / 2, food.y * grid + grid / 2);
+            }
+            function end() { clearInterval(loop); playing = false; finalEl.textContent = score; overlay.style.display = 'block'; btn.textContent = '▶ Играть'; btn.classList.remove('playing'); draw(); }
+            function start() {
+                resize();
+                if (snake.length > 0 && !playing && overlay.style.display === 'none') { playing = true; btn.textContent = '⏹ Стоп'; btn.classList.add('playing'); loop = setInterval(update, speed); return; }
+                init(); overlay.style.display = 'none'; playing = true; btn.textContent = '⏹ Стоп'; btn.classList.add('playing'); draw(); loop = setInterval(update, speed);
+            }
+            function stop() { clearInterval(loop); playing = false; btn.textContent = '▶ Играть'; btn.classList.remove('playing'); }
+            btn.addEventListener('click', () => { playing ? stop() : start(); });
+            document.addEventListener('keydown', e => {
+                if (!playing) return;
+                switch (e.key) { case 'ArrowUp': if (dir !== 'down') next = 'up'; e.preventDefault(); break; case 'ArrowDown': if (dir !== 'up') next = 'down'; e.preventDefault(); break; case 'ArrowLeft': if (dir !== 'right') next = 'left'; e.preventDefault(); break; case 'ArrowRight': if (dir !== 'left') next = 'right'; e.preventDefault(); break; }
+            });
+            init(); draw();
+        })();
+
+        
+
+        async function loadRoutes(day) {
+            const box = document.getElementById('resultBox');
+            box.innerHTML = '<p style="text-align:center;color:#279ed1;">Строю маршруты...</p>';
+            try {
+                const resp = await fetch(`/api/route?day=${day}`);
+                if (!resp.ok) throw new Error('Ошибка сервера');
+                const data = await resp.json();
+
+                let html = '<div class="result-title">Построенные маршруты</div>';
+
+                if (data.critical === 0) {
+                    html += '<p style="text-align:center;color:#598395;">Все банкоматы в норме, объезд не требуется.</p>';
+                } else {
+                    const carIcons = ['🚗', '🚙', '🚐', '🚛', '🚎'];
+                    data.routes.forEach((r, i) => {
+                        const hours = Math.floor(r.total_time / 60);
+                        const minutes = Math.round(r.total_time % 60);
+                        html += `<div class="result-item">
+                            <span class="result-icon">${carIcons[i] || '🚗'}</span>
+                            <span><strong>Машина ${r.car}</strong> — ${r.total_atms} банкоматов, ${hours} ч ${minutes} мин</span>
+                        </div>`;
+                    });
+                }
+
+                html += `<div class="critical-alert">
+                    <span class="critical-dot"></span>
+                    Красных: ${data.red} | Желтых: ${data.yellow} | Зеленых: ${data.green} | Критических банкоматов: ${data.critical}
+                </div>`;
+
+                if (data.unserviced > 0) {
+                    html += `<div class="critical-alert" style="border-left-color: #8aaebb;">
+                        <span class="critical-dot" style="background:#8aaebb;"></span>
+                        Не обслужено: ${data.unserviced} банкоматов (перенесены на следующий день)
+                    </div>`;
+                }
+
+                box.innerHTML = html;
+                window._routes = data.routes;
+                window._day = day;
+                window._stats = { red: data.red, yellow: data.yellow, green: data.green, critical: data.critical };
+            } catch (e) {
+                box.innerHTML = '<p style="color:red;">Не удалось построить маршруты. Проверьте сервер.</p>';
+            }
+        }
+
+        async function loadAtmsFromApi() {
+            try {
+                const resp = await fetch('/atms');
+                const atms = await resp.json();
+                window._atms = atms;
+                return atms;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAtmsFromApi);
+
+        document.getElementById('btnBuildRoute').addEventListener('click', function () {
             document.getElementById('resultBox').classList.add('show');
             document.getElementById('mapArea').classList.add('show');
+            document.getElementById('dayTabs').classList.add('show');
             this.textContent = 'Обновить маршрут';
+            loadRoutes(1);
+        });
+
+        document.querySelectorAll('.day-btn[data-day]').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const day = this.getAttribute('data-day');
+                document.querySelectorAll('.day-btn[data-day]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('mapFrame').src = `/map_day${day}`;
+                loadRoutes(day);
+            });
+        });
+
+        document.getElementById('btnStats').addEventListener('click', () => {
+            const stats = window._stats || { red: 0, yellow: 0, green: 1000 };
+            const red = stats.red;
+            const yellow = stats.yellow;
+            const green = stats.green;
+            const critical = stats.critical || red + yellow;
+
+            const routes = window._routes || [];
+            const cars = routes.filter(r => r.stops && r.stops.length > 0).length;
+            const stops = routes.reduce((s, r) => s + (Array.isArray(r.stops) ? r.stops.length : 0), 0);
+            const min = routes.reduce((s, r) => s + (r.total_time || 0), 0);
+
+            document.getElementById('statsDay').textContent = window._day || 1;
+            document.getElementById('statsBody').innerHTML = `
+        <div class="result-item"><span class="result-icon">🚗</span><span>Машин в работе: <strong>${cars}</strong> из 5</span></div>
+        <div class="result-item"><span class="result-icon">🏧</span><span>Банкоматов в объезде: <strong>${stops}</strong></span></div>
+        <div class="result-item"><span class="result-icon">⏱️</span><span>Суммарное время: <strong>${Math.floor(min / 60)} ч ${Math.round(min % 60)} мин</strong></span></div>
+        <div class="result-item"><span class="result-icon">🔴</span><span>Красных: <strong>${red}</strong></span></div>
+        <div class="result-item"><span class="result-icon">🟡</span><span>Желтых: <strong>${yellow}</strong></span></div>
+        <div class="result-item"><span class="result-icon">🟢</span><span>Зеленых: <strong>${green}</strong></span></div>
+        <div class="result-item"><span class="result-icon">⚠️</span><span>Критических: <strong>${critical}</strong></span></div>`;
+            document.getElementById('statsOverlay').style.display = 'flex';
         });
     </script>
-
 </body>
 </html>

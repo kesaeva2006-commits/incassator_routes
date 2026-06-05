@@ -49,8 +49,8 @@ def load_atms():
             
             cap_in = row[3]
             cap_out = row[4]
-            cur_in = row[9]
-            cur_out = row[10]
+            cur_in = 0
+            cur_out = cap_out
 
             if cur_out == 0:
                 cur_out = cap_out
