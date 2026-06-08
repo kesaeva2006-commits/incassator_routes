@@ -3,255 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Инкассаторские маршруты - Москва</title>
-    
-    <!-- Значок сайта (favicon) с машинкой -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🚗</text></svg>">
-    
+    <title>Инкассаторские маршруты — Москва</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    :root {
+        --blue-deep: #0b4566;
+        --blue-mid: #1f779e;
+        --blue-light: #a3c9db;
+        --accent: #4a9eb5;
+        --red: #cc6b4d;
+        --yellow: #d4a843;
+        --green: #4caf7d;
+        --text-dark: #0a2f3f;
+        --text-mid: #2d5569;
+        --text-muted: #6b8899;
     }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
         font-family: 'Montserrat', sans-serif;
         min-height: 100vh;
-        /* Более глубокий, сложный градиент: от глубокого синего к воздушному серо-голубому */
         background: linear-gradient(165deg, #0b4566 0%, #154f6c 30%, #2e8ab8 70%, #a3c9db 100%);
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        gap: 30px;
-        transition: background-position 0.3s ease;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 20px;
     }
 
-    /* Декоративные круги */
-    body::before {
-        content: '';
-        position: fixed;
-        top: -200px;
-        right: -150px;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(180, 220, 225, 0.15) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
-    body::after {
-        content: '';
-        position: fixed;
-        bottom: -180px;
-        left: -120px;
-        width: 500px;
-        height: 500px;
-        background: radial-gradient(circle, rgba(46, 138, 184, 0.1) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-
-    /* Частицы-машинки на фоне */
-    .particles-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 0;
-        overflow: hidden;
-    }
-
-    .particle-car {
-        position: absolute;
-        font-size: 24px;
-        opacity: 0.12;
-        animation: driveCar linear infinite;
-        filter: blur(0.5px);
-    }
-
-    @keyframes driveCar {
-        0% {
-            transform: translateX(-100px);
-        }
-        100% {
-            transform: translateX(calc(100vw + 100px));
-        }
-    }
-
-    /* Основной контейнер */
     .main-container {
-        background: rgba(255, 255, 255, 0.96); /* Чуть больше прозрачности для мягкости */
-        border-radius: 32px; /* Более плавные углы */
-        box-shadow: 
-            0 25px 50px -12px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.6);
+        background: rgba(255,255,255,0.97);
+        border-radius: 32px;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.6);
         padding: 55px 50px 45px;
-        max-width: 680px;
+        max-width: 720px;
         width: 100%;
         text-align: center;
         position: relative;
-        z-index: 1;
-        backdrop-filter: blur(12px);
-        transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1.2), box-shadow 0.4s ease;
     }
 
-    .main-container:hover {
-        transform: translateY(-5px);
-        box-shadow: 
-            0 35px 60px -15px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(255, 255, 255, 0.8);
-    }
-
-    /* Акцентная полоска сверху */
     .accent-line {
         position: absolute;
-        top: 0;
-        left: 50%;
+        top: 0; left: 50%;
         transform: translateX(-50%);
-        width: 70px; /* чуть шире */
-        height: 4px;
+        width: 70px; height: 4px;
         background: linear-gradient(90deg, #9adfd0, #6bc0d4, #4a9eb5);
         border-radius: 0 0 5px 5px;
-        opacity: 0.9;
     }
 
-    /* Иконка */
-    .icon {
-        font-size: 52px;
-        margin-bottom: 20px;
-        display: inline-block;
-        filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
-    }
+    .icon { font-size: 52px; margin-bottom: 20px; display: inline-block; }
 
-    /* Заголовок */
     h1 {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 44px;
-        font-weight: 600; /* 600 выглядит изящнее, чем 700 */
-        color: #0a2f3f;
-        letter-spacing: 1.5px;
-        margin-bottom: 8px;
-        line-height: 1.15;
-        text-shadow: 0 0 20px rgba(74, 158, 181, 0.3),
-                     0 0 40px rgba(74, 158, 181, 0.1);
+        font-size: 44px; font-weight: 600;
+        color: var(--text-dark);
+        letter-spacing: 1.5px; margin-bottom: 8px;
     }
 
-    /* Разделитель */
     .title-divider {
-        width: 50px;
-        height: 2px;
+        width: 50px; height: 2px;
         background: linear-gradient(90deg, transparent, #8cc9c7, #4a9eb5, #8cc9c7, transparent);
-        margin: 18px auto 14px;
-        border-radius: 1px;
+        margin: 18px auto 14px; border-radius: 1px;
     }
 
-    /* Подзаголовок */
     .subtitle {
-        font-size: 13px;
-        font-weight: 400;
-        color: #6b8899;
-        margin-bottom: 36px;
-        letter-spacing: 2.5px;
-        text-transform: uppercase;
+        font-size: 13px; font-weight: 400;
+        color: var(--text-muted);
+        margin-bottom: 32px;
+        letter-spacing: 2.5px; text-transform: uppercase;
     }
 
-    /* Кнопка */
-    .build-button {
-        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
-        border: none;
-        color: #ffffff;
-        padding: 17px 52px;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
+    /* ATM stats */
+    .atm-stats {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .atm-stat-card {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 12px;
         font-weight: 500;
+        letter-spacing: 0.5px;
+        background: #f4f9fb;
+        border: 1.5px solid #e1eef4;
+        color: var(--text-mid);
+    }
+
+    .atm-stat-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .atm-stat-dot.red    { background: var(--red); }
+    .atm-stat-dot.yellow { background: var(--yellow); }
+    .atm-stat-dot.green  { background: var(--green); }
+
+    /* Day selector */
+    .day-selector {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 28px;
+    }
+
+    .day-btn {
+        background: transparent;
+        border: 1.5px solid #c5dce8;
+        color: var(--text-mid);
+        padding: 9px 22px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 12px; font-weight: 500;
         cursor: pointer;
         border-radius: 50px;
-        letter-spacing: 2.5px;
+        letter-spacing: 1.5px;
         text-transform: uppercase;
-        box-shadow: 0 10px 25px -5px rgba(26, 95, 122, 0.4);
-        transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-        margin-bottom: 32px;
-        position: relative;
-        overflow: hidden;
+        transition: all 0.25s ease;
     }
 
-    /* Эффект блика на кнопке */
+    .day-btn:hover {
+        border-color: var(--blue-mid);
+        color: var(--blue-mid);
+        background: rgba(31,119,158,0.05);
+    }
+
+    .day-btn.active {
+        background: var(--blue-mid);
+        border-color: var(--blue-mid);
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(31,119,158,0.3);
+    }
+
+    /* Build button */
+    .build-button {
+        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
+        border: none; color: #fff;
+        padding: 17px 52px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 13px; font-weight: 500;
+        cursor: pointer; border-radius: 50px;
+        letter-spacing: 2.5px; text-transform: uppercase;
+        box-shadow: 0 10px 25px -5px rgba(26,95,122,0.4);
+        transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
+        margin-bottom: 32px;
+        position: relative; overflow: hidden;
+    }
+
     .build-button::after {
         content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255, 255, 255, 0.2);
+        position: absolute; top: 50%; left: 50%;
+        width: 0; height: 0;
+        background: rgba(255,255,255,0.2);
         border-radius: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%,-50%);
         transition: width 0.7s, height 0.7s;
     }
 
-    .build-button:hover::after {
-        width: 350px;
-        height: 350px;
-    }
+    .build-button:hover::after { width: 350px; height: 350px; }
 
     .build-button:hover {
         background: linear-gradient(135deg, #2c3e50 0%, #1a2d3b 100%);
-        box-shadow: 0 15px 30px -6px rgba(20, 40, 55, 0.5);
         transform: translateY(-3px);
-        letter-spacing: 3px;
-        transition: all 0.3s ease;
     }
 
-    .build-button:active {
-        transform: translateY(0);
-        box-shadow: 0 5px 15px rgba(26, 95, 122, 0.4);
-        transition: all 0.1s ease;
+    .build-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
     }
 
-    /* Блок с результатом */
+    /* Loading spinner */
+    .spinner {
+        display: none;
+        width: 20px; height: 20px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 24px;
+    }
+
+    .spinner.show { display: block; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error box */
+    .error-box {
+        display: none;
+        background: #fff5f3;
+        border: 1px solid #f5c6c0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #8b2a1a;
+        text-align: left;
+    }
+
+    .error-box.show { display: block; }
+
+    /* Result box */
     .result-box {
         display: none;
-        background: #ffffff;
+        background: #fff;
         border: 1px solid #e7f0f4;
         border-radius: 20px;
         padding: 28px 32px;
         margin-top: 5px;
         text-align: left;
-        animation: fadeSlideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        box-shadow: 0 8px 20px rgba(0, 40, 60, 0.04);
+        animation: fadeSlideIn 0.5s cubic-bezier(0.2,0.8,0.2,1);
+        box-shadow: 0 8px 20px rgba(0,40,60,0.04);
     }
 
-    .result-box.show {
-        display: block;
-    }
+    .result-box.show { display: block; }
 
     @keyframes fadeSlideIn {
-        from { 
-            opacity: 0; 
-            transform: translateY(20px); 
-        }
-        to { 
-            opacity: 1; 
-            transform: translateY(0); 
-        }
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-        .result-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            color: #0a3d52;
-            margin-bottom: 16px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e8f0f4;
-            letter-spacing: 0.5px;
-        }
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e8f0f4;
+    }
+
+    .result-title {
+        font-size: 14px; font-weight: 600;
+        color: var(--text-dark);
+        letter-spacing: 0.5px;
+    }
+
+    .export-btn {
+        font-size: 11px; font-weight: 600;
+        color: var(--blue-mid);
+        background: transparent;
+        border: 1.5px solid #c5dce8;
+        padding: 4px 12px; border-radius: 20px;
+        letter-spacing: 1px; cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .export-btn:hover {
+        background: var(--blue-mid);
+        border-color: var(--blue-mid);
+        color: #fff;
+    }
+
+    .result-day-badge {
+        font-size: 11px; font-weight: 600;
+        color: var(--blue-mid);
+        background: rgba(31,119,158,0.08);
+        padding: 4px 12px; border-radius: 20px;
+        letter-spacing: 1px; text-transform: uppercase;
+    }
 
     .result-item {
         display: flex;
@@ -259,64 +274,154 @@
         gap: 14px;
         padding: 11px 6px;
         border-bottom: 1px solid #f4f8fb;
-        font-size: 14px;
-        font-weight: 400;
-        color: #2d5569;
-        transition: background 0.2s ease, padding-left 0.2s ease;
+        font-size: 14px; font-weight: 400;
+        color: var(--text-mid);
+        transition: background 0.2s, padding-left 0.2s;
         border-radius: 8px;
         margin-bottom: 2px;
+        cursor: pointer;
     }
 
-    .result-item:hover {
+    .result-item:hover { background: #f8fbfd; padding-left: 12px; }
+    .result-item.active { background: rgba(31,119,158,0.07); padding-left: 12px; }
+
+    /* Detail panel */
+    .detail-panel {
+        display: none;
+        margin-top: 12px;
         background: #f8fbfd;
-        padding-left: 12px;
+        border-radius: 12px;
+        border: 1px solid #e1eef4;
+        overflow: hidden;
     }
 
-    .result-item:last-of-type {
-        border-bottom: 1px solid #f4f8fb;
-        margin-bottom: 0;
+    .detail-panel.show { display: block; }
+
+    .detail-panel-header {
+        padding: 10px 16px;
+        font-size: 12px; font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 1px; text-transform: uppercase;
+        border-bottom: 1px solid #e1eef4;
+        background: #f0f7fa;
     }
 
-    .result-icon {
-        font-size: 22px;
-        width: 30px;
+    .detail-stop {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 16px;
+        font-size: 13px;
+        color: var(--text-mid);
+        border-bottom: 1px solid #eef4f7;
+    }
+
+    .detail-stop:last-child { border-bottom: none; }
+
+    .detail-stop-num {
+        font-size: 11px; font-weight: 600;
+        color: var(--text-muted);
+        width: 20px; text-align: right;
+        flex-shrink: 0;
+    }
+
+    .detail-stop-id { font-weight: 500; color: var(--text-dark); }
+
+    .detail-stop-status {
+        margin-left: auto;
+        font-size: 11px; font-weight: 600;
+        padding: 2px 10px; border-radius: 20px;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-stop-status.RED    { background: #fde8e3; color: #8b2a1a; }
+    .detail-stop-status.YELLOW { background: #fef6e0; color: #7a5a00; }
+    .detail-stop-status.GREEN  { background: #e5f6ed; color: #1a6b3a; }
+
+    /* Skeleton loader */
+    @keyframes shimmer {
+        0%   { background-position: -400px 0; }
+        100% { background-position:  400px 0; }
+    }
+
+    .skeleton {
+        background: linear-gradient(90deg, #e8f0f4 25%, #f4f9fb 50%, #e8f0f4 75%);
+        background-size: 800px 100%;
+        animation: shimmer 1.4s infinite linear;
+        border-radius: 6px;
+    }
+
+    .skeleton-stop {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 16px;
+        border-bottom: 1px solid #eef4f7;
+    }
+
+    .skeleton-stop:last-child { border-bottom: none; }
+
+    .skeleton-num  { width: 20px; height: 12px; flex-shrink: 0; }
+    .skeleton-id   { width: 120px; height: 13px; }
+    .skeleton-badge { width: 60px; height: 20px; border-radius: 20px; margin-left: auto; }
+
+    .result-icon { font-size: 22px; width: 30px; text-align: center; }
+
+    .result-item strong { font-weight: 600; color: var(--text-dark); }
+
+    .result-meta {
+        margin-left: auto;
+        font-size: 12px;
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    /* Stats row */
+    .stats-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+    }
+
+    .stat-card {
+        flex: 1;
+        background: #f8fbfd;
+        border-radius: 12px;
+        padding: 14px;
         text-align: center;
-        opacity: 0.8;
     }
 
-    .result-item strong {
-        font-weight: 600;
-        color: #0e3b4d;
+    .stat-value {
+        font-size: 22px; font-weight: 600;
+        color: var(--text-dark);
+        font-family: 'Cormorant Garamond', serif;
     }
 
-    /* Критические банкоматы */
+    .stat-label {
+        font-size: 10px; font-weight: 500;
+        color: var(--text-muted);
+        letter-spacing: 1.5px; text-transform: uppercase;
+        margin-top: 4px;
+    }
+
+    /* Critical alert */
     .critical-alert {
         margin-top: 18px;
         padding: 14px 18px;
         background: #fefaf7;
         border-radius: 12px;
-        border-left: 4px solid #cc6b4d; /* приглушенный коралловый вместо ярко-красного */
-        font-size: 13px;
-        font-weight: 500;
+        border-left: 4px solid var(--red);
+        font-size: 13px; font-weight: 500;
         color: #8b422a;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transition: background 0.2s ease;
-    }
-
-    .critical-alert:hover {
-        background: #fef5f1;
+        display: flex; align-items: center; gap: 12px;
     }
 
     .critical-dot {
-        width: 9px;
-        height: 9px;
-        background: #cc6b4d;
-        border-radius: 50%;
+        width: 9px; height: 9px;
+        background: var(--red); border-radius: 50%;
         flex-shrink: 0;
         animation: pulse 2.2s ease-in-out infinite;
-        box-shadow: 0 0 0 2px rgba(204, 107, 77, 0.2);
+        box-shadow: 0 0 0 2px rgba(204,107,77,0.2);
     }
 
     @keyframes pulse {
@@ -324,952 +429,386 @@
         50% { opacity: 0.5; transform: scale(1.5); }
     }
 
-    /* Блок с картой */
+    /* Map area */
     .map-area {
         display: none;
         margin-top: 24px;
         border-radius: 20px;
         overflow: hidden;
         border: 2px solid #e1eef4;
-        animation: fadeSlideIn 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
-        box-shadow: 0 6px 22px rgba(0, 40, 60, 0.05);
+        animation: fadeSlideIn 0.55s cubic-bezier(0.2,0.8,0.2,1);
+        box-shadow: 0 6px 22px rgba(0,40,60,0.05);
     }
 
-    .map-area.show {
+    .map-area.show { display: block; }
+
+    .map-area iframe {
+        width: 100%;
+        height: 380px;
+        border: none;
         display: block;
     }
 
-    .map-placeholder {
-        background: #fafdfe;
-        height: 280px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        color: #598395;
-        font-size: 15px;
-        font-weight: 400;
-        position: relative;
-    }
 
-    /* Сетка на плейсхолдере карты */
-    .map-placeholder::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: 
-            linear-gradient(rgba(140, 190, 200, 0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(140, 190, 200, 0.06) 1px, transparent 1px);
-        background-size: 24px 24px;
-        pointer-events: none;
-    }
-
-    .map-placeholder .map-icon {
-        font-size: 52px;
-        margin-bottom: 16px;
-        opacity: 0.65;
-        position: relative;
-        z-index: 1;
-    }
-
-    .map-placeholder p {
-        position: relative;
-        z-index: 1;
-    }
-
-    /* Кнопки переключения дней */
-    .day-tabs {
-        display: none;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 20px;
-        margin-bottom: 4px;
-    }
-
-    .day-tabs.show {
-        display: flex;
-    }
-
-    .day-btn {
-        background: #ffffff;
-        border: 1.5px solid #cfe3ec;
-        color: #1f779e;
-        padding: 10px 26px;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        border-radius: 40px;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    .day-btn:hover {
-        border-color: #1f779e;
-        background: #f3f9fc;
-        transform: translateY(-2px);
-    }
-
-    .day-btn.active {
-        background: linear-gradient(135deg, #1f779e 0%, #1d688a 100%);
-        color: #ffffff;
-        border-color: transparent;
-        box-shadow: 0 8px 18px -6px rgba(26, 95, 122, 0.5);
-    }
-
-    /* Футер */
     .footer {
         margin-top: 32px;
-        font-size: 11px;
-        font-weight: 400;
+        font-size: 11px; font-weight: 400;
         color: #8aaebb;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        opacity: 0.9;
+        letter-spacing: 2px; text-transform: uppercase;
     }
 
-    /* ========== БЛОК 2: МИНИ-ИГРА (ПРЫЖКИ) ========== */
-    .game-block {
-        background: rgba(255, 255, 255, 0.96);
-        border-radius: 32px;
-        box-shadow: 
-            0 25px 50px -12px rgba(0, 0, 0, 0.25),
-            0 0 0 1px rgba(255, 255, 255, 0.6);
-        padding: 30px 35px;
-        max-width: 680px;
-        width: 100%;
+    .empty-day {
         text-align: center;
-        position: relative;
-        z-index: 1;
-        backdrop-filter: blur(12px);
-    }
-
-    .game-block-title {
-        font-family: 'Montserrat', sans-serif;
+        padding: 24px;
+        color: var(--text-muted);
         font-size: 13px;
-        font-weight: 600;
-        color: #0a3d52;
-        margin-bottom: 15px;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
     }
 
-    .game-container {
-        position: relative;
+    /* Compare table */
+    .compare-table {
         width: 100%;
-        height: 100px;
-        background: linear-gradient(180deg, #f0f7fa 0%, #e8f0f4 100%);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #d0e0e8;
-    }
-
-    .game-road {
-        position: absolute;
-        bottom: 30px;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: repeating-linear-gradient(90deg, #8aaebb 0px, #8aaebb 20px, transparent 20px, transparent 40px);
-    }
-
-    .game-road.moving {
-        animation: roadMove 0.6s linear infinite;
-    }
-
-    @keyframes roadMove {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(40px); }
-    }
-
-    .game-car-jump {
-        position: absolute;
-        bottom: 35px;
-        right: 50px;
-        font-size: 36px;
-        transition: bottom 0.15s ease-out;
-        z-index: 10;
-        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-        transform: scaleX(1);
-    }
-
-    .game-car-jump.jumping {
-        bottom: 75px;
-        transition: bottom 0.15s ease-in;
-    }
-
-    .game-obstacle {
-        position: absolute;
-        bottom: 38px;
-        left: -40px;
-        font-size: 30px;
-        z-index: 5;
-    }
-
-    .game-obstacle.moving {
-        animation: obstacleMove 2.2s linear infinite;
-    }
-
-    @keyframes obstacleMove {
-        0% { left: -40px; }
-        100% { left: calc(100% + 40px); }
-    }
-
-    .game-score {
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-family: 'Montserrat', sans-serif;
+        border-collapse: collapse;
+        margin-bottom: 24px;
         font-size: 13px;
-        font-weight: 600;
-        color: #1f779e;
-        z-index: 10;
-        background: rgba(255,255,255,0.9);
-        padding: 4px 10px;
-        border-radius: 10px;
     }
 
-    .game-over {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: #cc6b4d;
-        z-index: 20;
-        background: rgba(255,255,255,0.95);
-        padding: 8px 18px;
-        border-radius: 12px;
-        white-space: nowrap;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-
-    .game-controls {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 12px;
-    }
-
-    .game-btn {
-        background: #ffffff;
-        border: 1.5px solid #cfe3ec;
-        color: #1f779e;
-        padding: 8px 22px;
-        font-family: 'Montserrat', sans-serif;
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 1.5px;
-        text-transform: uppercase;
-        border-radius: 40px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .game-btn:hover {
-        background: #1f779e;
-        color: #ffffff;
-        border-color: #1f779e;
-    }
-
-    .game-btn.playing {
-        background: #cc6b4d;
-        color: #ffffff;
-        border-color: #cc6b4d;
-    }
-
-    .game-hint {
-        font-size: 10px;
-        color: #8aaebb;
-        margin-top: 10px;
-        letter-spacing: 1px;
-    }
-
-    /* ========== БЛОК 3: ЗМЕЙКА ========== */
-    .snake-container {
-        position: relative;
-        width: 100%;
-        height: 400px;
-        background: linear-gradient(180deg, #0a2f3f 0%, #0d3d52 100%);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid #1a4d63;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .snake-canvas {
-        display: block;
-        border-radius: 8px;
-    }
-
-    .snake-score {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        color: #6bc0d4;
-        margin-bottom: 10px;
-        letter-spacing: 1px;
-    }
-
-    .snake-overlay {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: 'Montserrat', sans-serif;
-        font-size: 16px;
-        font-weight: 600;
-        color: #ffffff;
-        z-index: 20;
-        background: rgba(0,0,0,0.8);
-        padding: 15px 25px;
-        border-radius: 12px;
+    .compare-table th {
+        font-size: 11px; font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 1.5px; text-transform: uppercase;
+        padding: 8px 12px;
+        border-bottom: 2px solid #e1eef4;
         text-align: center;
-        white-space: nowrap;
     }
+
+    .compare-table th:first-child { text-align: left; }
+
+    .compare-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f0f7fa;
+        color: var(--text-mid);
+        text-align: center;
+    }
+
+    .compare-table td:first-child {
+        font-weight: 600;
+        color: var(--text-dark);
+        text-align: left;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+
+    .compare-table tr.highlight { background: rgba(31,119,158,0.05); }
+
+    .compare-badge {
+        display: inline-block;
+        font-size: 10px; font-weight: 700;
+        padding: 2px 8px; border-radius: 20px;
+        letter-spacing: 0.5px; margin-left: 6px;
+        vertical-align: middle;
+    }
+
+    .compare-badge.max { background: #fde8e3; color: #8b2a1a; }
+    .compare-badge.min { background: #e5f6ed; color: #1a6b3a; }
 </style>
 </head>
 <body>
+<div class="main-container">
+    <div class="accent-line"></div>
+    <div class="icon">🚚</div>
+    <h1>Маршруты инкассаторов</h1>
+    <div class="title-divider"></div>
+    <p class="subtitle">Москва &nbsp;·&nbsp; 1000 банкоматов &nbsp;·&nbsp; 5 машин</p>
 
-    <!-- Анимированные машинки на фоне -->
-    <div class="particles-container" id="particlesContainer"></div>
+    <!-- Статистика банкоматов -->
+    <div class="atm-stats" id="atmStats"></div>
 
-    <!-- ========== БЛОК 1: ОСНОВНОЙ ========== -->
-    <div class="main-container">
-        <div class="accent-line"></div>
-        <div class="icon">🚚</div>
-        <h1>Маршруты инкассаторов</h1>
-        <div class="title-divider"></div>
-        <p class="subtitle">Москва &nbsp;·&nbsp; 1000 банкоматов &nbsp;·&nbsp; 5 машин</p>
-        
-        <button class="build-button" id="btnBuildRoute">Построить маршрут</button>
-        <div class="result-box" id="resultBox">
-		</div>
-        
-        <div class="day-tabs" id="dayTabs">
-            <button class="day-btn active" data-day="1">День 1</button>
-            <button class="day-btn" data-day="2">День 2</button>
-            <button class="day-btn" data-day="3">День 3</button>
-            <button class="day-btn" id="btnStats">Статистика</button>
-        </div>
+    <!-- Сравнение дней -->
+    <div class="compare-table" id="compareTable" style="display:none"></div>
 
-        <div id="statsOverlay" style="display:none; position:fixed; inset:0;
-             background:rgba(10,47,63,0.45); z-index:2000;
-             justify-content:center; align-items:center;">
-          <div style="background:#fff; border-radius:20px; padding:30px 34px;
-               max-width:420px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
-            <div class="result-title">Статистика - день <span id="statsDay">1</span></div>
-            <div id="statsBody"></div>
-            <button class="day-btn active" style="margin-top:18px;"
-               onclick="document.getElementById('statsOverlay').style.display='none'">Закрыть</button>
-          </div>
-        </div>
-        
-        <div class="map-area" id="mapArea">
-            <iframe src="map_day1.html" id="mapFrame" width="100%" height="400px" style="border: none; border-radius: 16px;"></iframe>
-        </div>
-        
-        <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
+    <!-- Выбор дня -->
+    <div class="day-selector">
+        <button class="day-btn" data-day="1">День 1</button>
+        <button class="day-btn active" data-day="2">День 2</button>
+        <button class="day-btn" data-day="3">День 3</button>
     </div>
 
-    <!-- ========== БЛОК 2: МИНИ-ИГРА (ПРЫЖКИ) ========== -->
-    <div class="game-block">
-        <div class="game-block-title">а динозаврик придёт?</div>
-        <div class="snake-score">🏧 Перепрыгнуто <span id="gameScore">0</span></div>
-        <div class="game-container" id="gameContainer">
-            <div class="game-road" id="gameRoad"></div>
-            <div class="game-car-jump" id="gameCar">🚚</div>
-            <div class="game-obstacle" id="gameObstacle">🏧</div>
-            <div class="game-over" id="gameOver">💥 Ты банкомат сломал...</div>
+    <button class="build-button" id="btnBuildRoute">Построить маршрут</button>
+    <button class="export-btn" id="btnExport" style="display:none;margin:-20px auto 28px;">↓ Скачать CSV</button>
+
+    <div class="spinner" id="spinner"></div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- Результаты -->
+    <div class="result-box" id="resultBox">
+        <div class="result-header">
+            <div class="result-title">Построенные маршруты</div>
+            <div class="result-day-badge" id="dayBadge">День 2</div>
         </div>
-        <div class="game-controls">
-            <button class="game-btn" id="btnJumpGame">▶ Играть</button>
+        <div id="routesList"></div>
+        <div class="stats-row" id="statsRow"></div>
+        <div class="critical-alert" id="criticalAlert" style="display:none">
+            <span class="critical-dot"></span>
+            <span id="criticalText"></span>
         </div>
-        <div class="game-hint">Пробел или клик по полю - прыжок</div>
     </div>
 
-    <!-- ========== БЛОК 3: ЗМЕЙКА ========== -->
-    <div class="game-block">
-        <div class="game-block-title">змейка уже не та</div>
-        <div class="snake-score">🏧 Собрано <span id="snakeScore">0</span></div>
-        <div class="snake-container" id="snakeContainer">
-            <canvas class="snake-canvas" id="snakeCanvas" width="580" height="380"></canvas>
-            <div class="snake-overlay" id="snakeOverlay">В следующий раз больше собери, ладно?<br>Сейчас собрано <span id="snakeFinalScore">0</span></div>
-        </div>
-        <div class="game-controls">
-            <button class="game-btn" id="btnSnakeGame">▶ Играть</button>
-        </div>
-        <div class="game-hint">Стрелки ← → ↑ ↓ для управления машиной</div>
+    <!-- Карта -->
+    <div class="map-area" id="mapArea">
+        <iframe id="mapFrame" src="" title="Карта маршрутов"></iframe>
     </div>
+
+    <p class="footer">РЭУ им. Г. В. Плеханова &nbsp;·&nbsp; 2026</p>
+</div>
 
 <script>
-    // Создание плавающих машинок на фоне
-    function createParticles() {
-        const container = document.getElementById('particlesContainer');
-        const emojis = ['🚗', '🚙', '🚐', '🚛', '🚎'];
-        
-        for (let i = 0; i < 15; i++) {
-            const particle = document.createElement('span');
-            particle.className = 'particle-car';
-            particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-            particle.style.top = (Math.random() * 80 + 10) + '%';
-            particle.style.animationDuration = (Math.random() * 20 + 15) + 's';
-            particle.style.animationDelay = (Math.random() * 15) + 's';
-            
-            // Некоторые едут справа налево
-            if (Math.random() > 0.5) {
-                particle.style.animationName = 'driveCarReverse';
-                particle.style.left = 'auto';
-                particle.style.right = '-100px';
-            }
-            
-            container.appendChild(particle);
-        }
-        
-        // Добавляем обратную анимацию
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes driveCarReverse {
-                0% { transform: translateX(100px); }
-                100% { transform: translateX(calc(-100vw - 100px)); }
-            }
-        `;
-        document.head.appendChild(style);
-    }
+    const ICONS = ['🚗','🚙','🚐','🚛','🚎'];
+    let selectedDay = 2;
 
-    createParticles();
-
-    // Параллакс-эффект для фона
-    document.addEventListener('mousemove', (e) => {
-        const moveX = (e.clientX - window.innerWidth / 2) * 0.005;
-        const moveY = (e.clientY - window.innerHeight / 2) * 0.005;
-        
-        document.body.style.backgroundPosition = `${50 + moveX}% ${50 + moveY}%`;
-    });
-
-    // ========== МИНИ-ИГРА 1: ПРЫЖКИ ==========
-    (function() {
-        const car = document.getElementById('gameCar');
-        const obstacle = document.getElementById('gameObstacle');
-        const road = document.getElementById('gameRoad');
-        const scoreElement = document.getElementById('gameScore');
-        const gameOverElement = document.getElementById('gameOver');
-        const gameContainer = document.getElementById('gameContainer');
-        const btnPlay = document.getElementById('btnJumpGame');
-        
-        let jumpedCount = 0;
-        let isJumping = false;
-        let isGameOver = false;
-        let isPlaying = false;
-        let collisionCheckInterval;
-        let obstaclePassed = false;
-        
-        function jump() {
-            if (isJumping || isGameOver || !isPlaying) return;
-            
-            isJumping = true;
-            obstaclePassed = false;
-            car.classList.add('jumping');
-            
-            setTimeout(() => {
-                car.classList.remove('jumping');
-                isJumping = false;
-            }, 450);
-        }
-        
-        function checkCollision() {
-            if (isGameOver || !isPlaying) return;
-            
-            const carRect = car.getBoundingClientRect();
-            const obstacleRect = obstacle.getBoundingClientRect();
-            
-            // Проверяем, перепрыгнули ли банкомат
-            if (!obstaclePassed && obstacleRect.left > carRect.right) {
-                obstaclePassed = true;
-                jumpedCount++;
-                scoreElement.textContent = jumpedCount;
-                
-                scoreElement.style.transform = 'scale(1.2)';
-                setTimeout(() => scoreElement.style.transform = 'scale(1)', 150);
-            }
-            
-            // Проверка столкновения
-            const margin = 12;
-            const carBottom = carRect.bottom - margin;
-            const obstacleTop = obstacleRect.top + margin;
-            
-            if (
-                obstacleRect.right - margin > carRect.left + margin &&
-                obstacleRect.left + margin < carRect.right - margin &&
-                carBottom > obstacleTop
-            ) {
-                endGame();
-            }
-        }
-        
-        function endGame() {
-            isGameOver = true;
-            gameOverElement.style.display = 'block';
-            obstacle.classList.remove('moving');
-            road.classList.remove('moving');
-            clearInterval(collisionCheckInterval);
-            btnPlay.textContent = '▶ Играть';
-            btnPlay.classList.remove('playing');
-            isPlaying = false;
-        }
-        
-        function pauseGame() {
-            obstacle.classList.remove('moving');
-            road.classList.remove('moving');
-            clearInterval(collisionCheckInterval);
-            btnPlay.textContent = '▶ Играть';
-            btnPlay.classList.remove('playing');
-            isPlaying = false;
-            // НЕ сбрасываем jumpedCount, НЕ показываем gameOver
-        }
-        
-        function startGame() {
-            // Если это рестарт после столкновения — сбрасываем
-            if (isGameOver) {
-                jumpedCount = 0;
-                scoreElement.textContent = '0';
-            }
-            // Если это пауза — счёт остаётся
-            
-            isGameOver = false;
-            isJumping = false;
-            obstaclePassed = false;
-            car.classList.remove('jumping');
-            gameOverElement.style.display = 'none';
-            isPlaying = true;
-            btnPlay.textContent = '⏹ Стоп';
-            btnPlay.classList.add('playing');
-            
-            obstacle.classList.add('moving');
-            road.classList.add('moving');
-            
-            collisionCheckInterval = setInterval(checkCollision, 20);
-        }
-        
-        function toggleGame() {
-            if (isPlaying) {
-                if (isGameOver) {
-                    startGame();  // рестарт после столкновения
-                } else {
-                    pauseGame();  // просто пауза
-                }
-            } else {
-                startGame();
-            }
-        }
-        
-        btnPlay.addEventListener('click', toggleGame);
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && isPlaying) {
-                e.preventDefault();
-                if (isGameOver) {
-                    startGame();
-                } else {
-                    jump();
-                }
-            }
-        });
-        
-        gameContainer.addEventListener('click', (e) => {
-            if (isPlaying) {
-                if (isGameOver) {
-                    startGame();
-                } else {
-                    jump();
-                }
-            }
-        });
-    })();
-
-    // ========== МИНИ-ИГРА 2: ЗМЕЙКА ==========
-    (function() {
-        const canvas = document.getElementById('snakeCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('snakeScore');
-        const finalScoreElement = document.getElementById('snakeFinalScore');
-        const overlay = document.getElementById('snakeOverlay');
-        const btnPlay = document.getElementById('btnSnakeGame');
-        const container = document.getElementById('snakeContainer');
-        
-        // Подгоняем canvas под размер контейнера
-        function resizeCanvas() {
-            const rect = container.getBoundingClientRect();
-            canvas.width = rect.width - 4;
-            canvas.height = rect.height - 4;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        
-        const gridSize = 20;
-        let snake = [];
-        let food = {};
-        let direction = 'right';
-        let nextDirection = 'right';
-        let score = 0;
-        let gameLoop;
-        let isPlaying = false;
-        let speed = 120;
-        
-        function init() {
-            const cols = Math.floor(canvas.width / gridSize);
-            const rows = Math.floor(canvas.height / gridSize);
-            const startX = Math.floor(cols / 2);
-            const startY = Math.floor(rows / 2);
-            
-            snake = [
-                {x: startX, y: startY},
-                {x: startX - 1, y: startY},
-                {x: startX - 2, y: startY}
-            ];
-            
-            direction = 'right';
-            nextDirection = 'right';
-            score = 0;
-            scoreElement.textContent = '0';
-	    speed = 200;
-            spawnFood();
-        }
-        
-        function spawnFood() {
-            const cols = Math.floor(canvas.width / gridSize);
-            const rows = Math.floor(canvas.height / gridSize);
-            
-            do {
-                food = {
-                    x: Math.floor(Math.random() * cols),
-                    y: Math.floor(Math.random() * rows)
-                };
-            } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
-        }
-        
-        function update() {
-            direction = nextDirection;
-            
-            const head = {...snake[0]};
-            
-            switch(direction) {
-                case 'right': head.x++; break;
-                case 'left': head.x--; break;
-                case 'up': head.y--; break;
-                case 'down': head.y++; break;
-            }
-            
-            // Проверка столкновения со стенами
-            const cols = Math.floor(canvas.width / gridSize);
-            const rows = Math.floor(canvas.height / gridSize);
-            if (head.x < 0 || head.x >= cols || head.y < 0 || head.y >= rows) {
-                gameOverSnake();
-                return;
-            }
-            
-            // Проверка столкновения с собой
-            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameOverSnake();
-                return;
-            }
-            
-            snake.unshift(head);
-            
-            // Проверка, съели ли еду
-            if (head.x === food.x && head.y === food.y) {
-                score++;
-                scoreElement.textContent = score;
-                spawnFood();
-                // Ускоряем игру, но не слишком быстро
-                if (speed > 100) speed -= 5;
-                clearInterval(gameLoop);
-                gameLoop = setInterval(update, speed);
-            } else {
-                snake.pop();
-            }
-            
-            draw();
-        }
-        
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Сетка
-            ctx.strokeStyle = 'rgba(140, 190, 200, 0.06)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-            
-            // Змейка
-            snake.forEach((segment, index) => {
-                const x = segment.x * gridSize;
-                const y = segment.y * gridSize;
-                
-                if (index === 0) {
-                    // Голова — машинка
-                    ctx.font = `${gridSize - 2}px serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    
-                    // Поворачиваем машинку в зависимости от направления
-                    ctx.save();
-                    ctx.translate(x + gridSize/2, y + gridSize/2);
-                    
-                    switch(direction) {
-                        case 'left':
-                            // Едет влево — нормально, нос смотрит влево
-                            break;
-                        case 'right':
-                            // Едет вправо — отражаем по горизонтали, нос смотрит вправо
-                            ctx.scale(-1, 1);
-                            break;
-                        case 'up':
-                            // Едет вверх — поворачиваем на -90° и отражаем по горизонтали
-                            ctx.rotate(-Math.PI/2);
-                            ctx.scale(-1, 1);
-                            break;
-                        case 'down':
-                            // Едет вниз — поворачиваем на 90° и отражаем по горизонтали
-                            ctx.rotate(Math.PI/2);
-                            ctx.scale(-1, 1);
-                            break;
-                    }
-                    
-                    ctx.fillText('🚚', 0, 0);
-                    ctx.restore();
-                } else {
-                    // Тело — мешки с деньгами
-                    ctx.font = `${gridSize - 4}px serif`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('💰', x + gridSize/2, y + gridSize/2);
-                }
-            });
-            
-            // Еда — банкомат
-            ctx.font = `${gridSize - 2}px serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🏧', food.x * gridSize + gridSize/2, food.y * gridSize + gridSize/2);
-        }
-        
-        function gameOverSnake() {
-            clearInterval(gameLoop);
-            isPlaying = false;
-            finalScoreElement.textContent = score;
-            overlay.style.display = 'block';
-            btnPlay.textContent = '▶ Играть';
-            btnPlay.classList.remove('playing');
-            draw(); // Последний кадр
-        }
-        
-        function startSnake() {
-            resizeCanvas();
-            // Если игра была на паузе — не сбрасываем, просто продолжаем
-            if (snake.length > 0 && !isPlaying && overlay.style.display === 'none') {
-                // Продолжаем с того же места (пауза)
-                overlay.style.display = 'none';
-                isPlaying = true;
-                btnPlay.textContent = '⏹ Стоп';
-                btnPlay.classList.add('playing');
-                gameLoop = setInterval(update, speed);
-                return;
-            }
-            // Иначе — новая игра
-            init();
-            overlay.style.display = 'none';
-            speed = 200;
-            isPlaying = true;
-            btnPlay.textContent = '⏹ Стоп';
-            btnPlay.classList.add('playing');
-            draw();
-            gameLoop = setInterval(update, speed);
-        }
-        
-        function stopSnake() {
-            clearInterval(gameLoop);
-            isPlaying = false;
-            btnPlay.textContent = '▶ Играть';
-            btnPlay.classList.remove('playing');
-            // Не показываем overlay — это пауза, а не конец игры
-        }
-        
-        function toggleSnake() {
-            if (isPlaying) {
-                stopSnake();
-            } else {
-                startSnake();
-            }
-        }
-        
-        btnPlay.addEventListener('click', toggleSnake);
-        
-        // Управление стрелками
-        document.addEventListener('keydown', (e) => {
-            if (!isPlaying) return;
-            
-            switch(e.key) {
-                case 'ArrowUp':
-                    if (direction !== 'down') nextDirection = 'up';
-                    e.preventDefault();
-                    break;
-                case 'ArrowDown':
-                    if (direction !== 'up') nextDirection = 'down';
-                    e.preventDefault();
-                    break;
-                case 'ArrowLeft':
-                    if (direction !== 'right') nextDirection = 'left';
-                    e.preventDefault();
-                    break;
-                case 'ArrowRight':
-                    if (direction !== 'left') nextDirection = 'right';
-                    e.preventDefault();
-                    break;
-            }
-        });
-        
-        // Начальный рисунок
-        init();
-        draw();
-    })();
-
-    // Функция для загрузки маршрутов из routes.json
-    async function loadRoutes(day) {
-        const resultBox = document.getElementById('resultBox');
-        resultBox.innerHTML = '<p style="text-align: center; color: #279ed1;">Загрузка маршрутов...</p>';
-        
-        try {
-            // Загружаем routes.json из той же папки (templates/)
-            const response = await fetch('routes.json');
-            if (!response.ok) throw new Error('Файл routes.json не найден');
-            const allRoutes = await response.json();
-            
-            // Фильтруем по дню и сортируем по номеру машины
-            const dayRoutes = allRoutes.filter(r => r.day == day).sort((a,b) => a.car - b.car);
-            if (dayRoutes.length === 0) throw new Error('Нет маршрутов для этого дня');
-            
-            // Подсчитываем общее количество критических банкоматов за день
-            const totalCritical = dayRoutes.reduce((sum, route) => sum + (route.critical_count || 0), 0);
-            
-            let html = '<div class="result-title">Построенные маршруты</div>';
-            dayRoutes.forEach(route => {
-                const stopsCount = route.stops.length;
-                const totalMinutes = route.total_time || 0;   // берём из routes.json
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = Math.round(totalMinutes % 60);
-
-                html += `<div class="result-item">
-                    <span class="result-icon">🚗</span>
-                    <span><strong>Машина ${route.car}</strong> - ${stopsCount} банкоматов, ${hours} ч ${minutes} мин</span>
-                </div>`;
-            });
-            
-            // Добавляем блок с критическими банкоматами
-            html += `<div class="critical-alert">
-                        <span class="critical-dot"></span>
-                        Критических банкоматов: ${totalCritical} (при наличии требуется срочный объезд)
-                    </div>`;
-            
-            resultBox.innerHTML = html;
-
-            // Сохраняем данные дня для окна статистики
-            window._dayRoutes = dayRoutes;
-            window._day = day;
-        } catch (error) {
-            // Если routes.json недоступен — показываем демо-данные
-            resultBox.innerHTML = `
-                <div class="result-title">Построенные маршруты</div>
-                <div class="result-item"><span class="result-icon">🚗</span><span><strong>Машина 1</strong> — 18 банкоматов, 7 ч 20 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚙</span><span><strong>Машина 2</strong> — 15 банкоматов, 6 ч 50 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚐</span><span><strong>Машина 3</strong> — 20 банкоматов, 7 ч 45 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚛</span><span><strong>Машина 4</strong> — 17 банкоматов, 7 ч 10 мин</span></div>
-                <div class="result-item"><span class="result-icon">🚎</span><span><strong>Машина 5</strong> — 16 банкоматов, 6 ч 55 мин</span></div>
-                <div class="critical-alert">
-                    <span class="critical-dot"></span>
-                    Критических банкоматов: 3 - требуется срочный объезд
-                </div>
-            `;
-        }
-    }
-
-    // Обработчик кнопки «Построить маршрут»
-    document.getElementById('btnBuildRoute').addEventListener('click', function() {
-        document.getElementById('resultBox').classList.add('show');
-        document.getElementById('mapArea').classList.add('show');
-        document.getElementById('dayTabs').classList.add('show');
-        this.textContent = 'Обновить маршрут';
-        loadRoutes(1);  // по умолчанию показываем день 1
-    });
-
-    // Переключение дней (только кнопки с data-day — дни 1/2/3)
-    document.querySelectorAll('.day-btn[data-day]').forEach(btn => {
+    // Выбор дня
+    document.querySelectorAll('.day-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            const day = this.getAttribute('data-day');
-            // Активная кнопка (тоже только среди дней)
-            document.querySelectorAll('.day-btn[data-day]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            // Меняем карту
-            document.getElementById('mapFrame').src = `map_day${day}.html`;
-            // Обновляем карточки машин
-            loadRoutes(day);
+            selectedDay = parseInt(this.dataset.day);
         });
     });
 
-    // Обработчик кнопки «Статистика»
-    document.getElementById('btnStats').addEventListener('click', function() {
-        const routes = window._dayRoutes || [];
-        const carsWorking = routes.filter(r => r.stops.length > 0).length;
-        const totalStops = routes.reduce((s,r)=> s + r.stops.length, 0);
-        const totalCritical = routes.reduce((s,r)=> s + (r.critical_count||0), 0);
-        const totalMin = routes.reduce((s,r)=> s + (r.total_time||0), 0);
-        const h = Math.floor(totalMin/60), m = Math.round(totalMin%60);
-        document.getElementById('statsDay').textContent = window._day || 1;
-        document.getElementById('statsBody').innerHTML = `
-            <div class="result-item"><span class="result-icon">🚗</span><span>Машин в работе: <strong>${carsWorking}</strong> из 5</span></div>
-            <div class="result-item"><span class="result-icon">🏧</span><span>Банкоматов в объезде: <strong>${totalStops}</strong></span></div>
-            <div class="result-item"><span class="result-icon">⚠️</span><span>Критических: <strong>${totalCritical}</strong></span></div>
-            <div class="result-item"><span class="result-icon">⏱️</span><span>Суммарное время: <strong>${h} ч ${m} мин</strong></span></div>`;
-        document.getElementById('statsOverlay').style.display = 'flex';
+    document.getElementById('btnBuildRoute').addEventListener('click', buildRoutes);
+
+    document.getElementById('btnExport').addEventListener('click', () => {
+        window.location.href = `/api/routes/export?day=${selectedDay}`;
     });
 
-    // Функция загрузки банкоматов (оставлена для совместимости, не используется)
-    async function loadAtms() {
+    async function buildRoutes() {
+        const btn = document.getElementById('btnBuildRoute');
+        const spinner = document.getElementById('spinner');
+        const errorBox = document.getElementById('errorBox');
+        const resultBox = document.getElementById('resultBox');
+        const mapArea = document.getElementById('mapArea');
+
+        // Сброс
+        btn.disabled = true;
+        btn.textContent = 'Загрузка...';
+        spinner.classList.add('show');
+        errorBox.classList.remove('show');
+        resultBox.classList.remove('show');
+        mapArea.classList.remove('show');
+
         try {
-            const response = await fetch('/atms');
-            const atms = await response.json();
-            console.log('Загружено банкоматов:', atms.length);
-            return atms;
-        } catch (error) {
-            console.log('Сервер недоступен, банкоматы загружаются из map.html');
-            return [];
+            const resp = await fetch(`/api/routes/all?day=${selectedDay}`);
+            if (!resp.ok) throw new Error(`Сервер вернул ${resp.status}`);
+            const data = await resp.json();
+
+            if (data.error) throw new Error(data.error);
+
+            renderResults(data, selectedDay);
+            renderMap(selectedDay);
+            document.getElementById('btnExport').style.display = 'inline-block';
+
+        } catch (err) {
+            errorBox.textContent = `Ошибка: ${err.message}`;
+            errorBox.classList.add('show');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Обновить маршрут';
+            spinner.classList.remove('show');
         }
     }
-</script>
 
+    function formatTime(minutes) {
+        const h = Math.floor(minutes / 60);
+        const m = Math.round(minutes % 60);
+        if (h === 0) return `${m} мин`;
+        return `${h} ч ${m} мин`;
+    }
+
+    function renderResults(routes, day) {
+        const resultBox = document.getElementById('resultBox');
+        const routesList = document.getElementById('routesList');
+        const statsRow = document.getElementById('statsRow');
+        const criticalAlert = document.getElementById('criticalAlert');
+        const criticalText = document.getElementById('criticalText');
+        const dayBadge = document.getElementById('dayBadge');
+
+        dayBadge.textContent = `День ${day}`;
+
+        if (!routes || routes.length === 0) {
+            routesList.innerHTML = '<div class="empty-day">Маршруты для этого дня не сгенерированы</div>';
+            statsRow.innerHTML = '';
+            criticalAlert.style.display = 'none';
+            resultBox.classList.add('show');
+            return;
+        }
+
+        // Список машин
+        routesList.innerHTML = routes.map((r, i) => `
+            <div class="result-item" data-car="${r.car}">
+                <span class="result-icon">${ICONS[i % ICONS.length]}</span>
+                <span><strong>Машина ${r.car}</strong> &nbsp;—&nbsp; ${r.stops} банкоматов</span>
+                <span class="result-meta">${formatTime(r.total_time)}</span>
+            </div>
+            <div class="detail-panel" id="detail-car-${r.car}"></div>
+        `).join('');
+
+        routesList.querySelectorAll('.result-item').forEach(item => {
+            item.addEventListener('click', () => loadCarDetail(item, day));
+        });
+
+        // Итоговая статистика
+        const totalAtms = routes.reduce((s, r) => s + r.stops, 0);
+        const totalCritical = routes.reduce((s, r) => s + r.critical_count, 0);
+        const avgTime = routes.reduce((s, r) => s + r.total_time, 0) / routes.length;
+
+        statsRow.innerHTML = `
+            <div class="stat-card">
+                <div class="stat-value">${totalAtms}</div>
+                <div class="stat-label">Банкоматов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${routes.length}</div>
+                <div class="stat-label">Машин</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${formatTime(avgTime)}</div>
+                <div class="stat-label">Среднее время</div>
+            </div>
+        `;
+
+        // Критические
+        if (totalCritical > 0) {
+            criticalText.textContent = `Критических банкоматов: ${totalCritical} — требуется срочный объезд`;
+            criticalAlert.style.display = 'flex';
+        } else {
+            criticalAlert.style.display = 'none';
+        }
+
+        resultBox.classList.add('show');
+    }
+
+    function renderMap(day) {
+        const mapArea = document.getElementById('mapArea');
+        const mapFrame = document.getElementById('mapFrame');
+        mapFrame.src = `/map_day${day}`;
+        mapArea.classList.add('show');
+    }
+
+    async function loadAtmStats() {
+        const box = document.getElementById('atmStats');
+        try {
+            const resp = await fetch('/api/atms/stats');
+            if (!resp.ok) return;
+            const d = await resp.json();
+            if (d.error) return;
+            box.innerHTML = `
+                <div class="atm-stat-card"><span class="atm-stat-dot red"></span>${d.red} критических</div>
+                <div class="atm-stat-card"><span class="atm-stat-dot yellow"></span>${d.yellow} внимание</div>
+                <div class="atm-stat-card"><span class="atm-stat-dot green"></span>${d.green} в норме</div>
+            `;
+        } catch (_) {}
+    }
+
+    const STATUS_LABEL = { RED: 'Критично', YELLOW: 'Внимание', GREEN: 'Норма', UNKNOWN: '—' };
+
+    async function loadCarDetail(item, day) {
+        const car = item.dataset.car;
+        const panel = document.getElementById(`detail-car-${car}`);
+
+        if (panel.classList.contains('show')) {
+            panel.classList.remove('show');
+            item.classList.remove('active');
+            return;
+        }
+
+        routesList.querySelectorAll('.result-item').forEach(el => el.classList.remove('active'));
+        routesList.querySelectorAll('.detail-panel').forEach(el => el.classList.remove('show'));
+
+        item.classList.add('active');
+        panel.innerHTML = `
+            <div class="detail-panel-header">Загрузка маршрута...</div>
+            ${Array.from({length: 5}, () => `
+                <div class="skeleton-stop">
+                    <div class="skeleton skeleton-num"></div>
+                    <div class="skeleton skeleton-id"></div>
+                    <div class="skeleton skeleton-badge"></div>
+                </div>
+            `).join('')}
+        `;
+        panel.classList.add('show');
+
+        try {
+            const resp = await fetch(`/api/routes/detail?day=${day}&car=${car}`);
+            if (!resp.ok) throw new Error(`Ошибка ${resp.status}`);
+            const stops = await resp.json();
+
+            panel.innerHTML = `
+                <div class="detail-panel-header">Маршрут машины ${car} — ${stops.length} банкоматов</div>
+                ${stops.map(s => `
+                    <div class="detail-stop">
+                        <span class="detail-stop-num">${s.order}</span>
+                        <span class="detail-stop-id">Банкомат #${s.atm_id ?? '—'}</span>
+                        <span class="detail-stop-status ${s.status}">${STATUS_LABEL[s.status] ?? s.status}</span>
+                    </div>
+                `).join('')}
+            `;
+        } catch (err) {
+            panel.innerHTML = `<div class="detail-panel-header">Ошибка: ${err.message}</div>`;
+        }
+    }
+
+    async function loadCompare() {
+        try {
+            const resp = await fetch('/api/routes/compare');
+            if (!resp.ok) return;
+            const days = await resp.json();
+            if (!days.length) return;
+
+            const maxAtms     = Math.max(...days.map(d => d.atms));
+            const minAtms     = Math.min(...days.map(d => d.atms));
+            const maxCritical = Math.max(...days.map(d => d.critical));
+            const maxTime     = Math.max(...days.map(d => d.avg_time));
+
+            const rows = days.map(d => {
+                const atmBadge      = d.atms === maxAtms && maxAtms > 0     ? '<span class="compare-badge max">макс</span>' :
+                                      d.atms === minAtms && days.length > 1  ? '<span class="compare-badge min">мин</span>' : '';
+                const critBadge     = d.critical === maxCritical && maxCritical > 0 ? '<span class="compare-badge max">макс</span>' : '';
+                const timeBadge     = d.avg_time === maxTime && maxTime > 0  ? '<span class="compare-badge max">макс</span>' : '';
+                const isHighlight   = d.atms === maxAtms || d.critical === maxCritical;
+
+                return `
+                    <tr${isHighlight ? ' class="highlight"' : ''}>
+                        <td>День ${d.day}</td>
+                        <td>${d.cars}</td>
+                        <td>${d.atms}${atmBadge}</td>
+                        <td>${d.critical}${critBadge}</td>
+                        <td>${formatTime(d.avg_time)}${timeBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const box = document.getElementById('compareTable');
+            box.innerHTML = `
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>День</th>
+                            <th>Машин</th>
+                            <th>Банкоматов</th>
+                            <th>Критических</th>
+                            <th>Среднее время</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            `;
+            box.style.display = 'block';
+        } catch (_) {}
+    }
+
+    loadAtmStats();
+    loadCompare();
+    buildRoutes();
+</script>
 </body>
 </html>
