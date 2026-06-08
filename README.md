@@ -38,8 +38,6 @@ python app.py
 ```bash
 git clone https://github.com/kesaeva2006-commits/incassator_routes.git
 cd incassator_routes
-python -m venv venv
-venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
