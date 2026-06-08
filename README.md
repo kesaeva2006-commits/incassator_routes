@@ -34,6 +34,16 @@ python generate_atms_json.py
 python app.py
 ```
 
+### Новая версия
+'''bash
+git clone https://github.com/kesaeva2006-commits/incassator_routes.git
+cd incassator_routes
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+python app.py
+'''
+
 ## Функциональность
 
 - **1000 банкоматов** — генерация и хранение данных о банкоматах Москвы
@@ -63,6 +73,7 @@ pytest tests/ -v --cov=. --cov-report=term-missing
 pytest tests/test_performance.py -v -s
 pytest tests/test_e2e.py -v -s
 ```
+
 
 ## Требования
 
