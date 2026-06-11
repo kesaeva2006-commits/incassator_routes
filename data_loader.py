@@ -37,6 +37,38 @@ def save_atms(atms):
             conn.close()
 
 
+def _atms_from_generator():
+    atms_list = []
+    for atm in generate_atms(1000, seed=42):
+        cap_in = atm.capacity_in
+        cap_out = atm.capacity_out
+        cur_in = 0
+        cur_out = cap_out
+        in_ratio = cur_in / cap_in if cap_in > 0 else 0
+        out_ratio = 1 - (cur_out / cap_out) if cap_out > 0 else 0
+        if in_ratio > 0.9 or out_ratio > 0.9:
+            status = "red"
+        elif in_ratio > 0.7 or out_ratio > 0.7:
+            status = "yellow"
+        else:
+            status = "green"
+        atms_list.append({
+            "id": atm.id,
+            "lat": atm.lat,
+            "lon": atm.lon,
+            "capacity_in": cap_in,
+            "capacity_out": cap_out,
+            "mean_in": atm.mean_in,
+            "std_in": atm.std_in,
+            "mean_out": atm.mean_out,
+            "std_out": atm.std_out,
+            "current_in_level": cur_in,
+            "current_out_level": cur_out,
+            "status": status,
+        })
+    return atms_list
+
+
 def load_atms():
     conn = None
     try:
@@ -46,7 +78,7 @@ def load_atms():
         rows = cur.fetchall()
         atms_list = []
         for row in rows:
-            
+
             cap_in = row[3]
             cap_out = row[4]
             cur_in = 0
@@ -81,8 +113,8 @@ def load_atms():
             })
         return atms_list
     except Exception as e:
-        print(f"Error: {e}")
-        return []
+        print(f"DB unavailable, using generated data: {e}")
+        return _atms_from_generator()
     finally:
         if conn:
             conn.close()
