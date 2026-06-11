@@ -20,7 +20,7 @@ services:
   web:
     build: .
     ports:
-      - "5001:5001"
+      - "5000:5000"
     environment:
       DATABASE_URL: postgresql://postgres:11lr00@db:5432/incassator_db
     depends_on:
